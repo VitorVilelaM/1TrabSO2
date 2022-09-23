@@ -10,15 +10,10 @@ import operatingSystem.Kernel;
  * Kernel desenvolvido pelo aluno. Outras classes criadas pelo aluno podem ser
  * utilizadas, como por exemplo: - Arvores; - Filas; - Pilhas; - etc...
  *
- * @author Vitor
+ * @author Vitor 
  */
 public class MyKernel implements Kernel {
 
-    private Diretorio dirRaiz;
-    private Diretorio dirAtual = new Diretorio(dirRaiz, ".");
-
-    ;
-    
     public MyKernel() {
 
     }
@@ -43,46 +38,6 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        int i, position = -1;
-
-        boolean procura = true;
-
-        String caminho[] = parameters.split("/");
-        if (!caminho[0].equals(".")) {
-            result = "Caminho não pode ser acessado";
-        } else {
-
-            //System.out.println("Tamanho do caminho :" + caminho.length);
-            if (caminho.length == 2) {
-                Diretorio novo = new Diretorio(dirAtual, caminho[1]);
-                dirAtual.addFilhos(novo);
-                dirAtual.getFilhos();
-
-            } else if (caminho.length > 2) {
-                i = 1;
-                while (i <= caminho.length - 2 && procura) {
-                    position = dirAtual.procuraFilhos(caminho[i]);
-                    
-                    if (position >= 0) {
-                        System.out.println(position);
-                        dirAtual = dirAtual.novoDirAtual(position);
-                    } else {
-                        procura = false;
-                    }
-                    i++;
-                }
-                
-                if (procura) {
-                    Diretorio novo = new Diretorio(dirAtual, caminho[caminho.length - 1]);
-                    dirAtual.addFilhos(novo);
-                    dirAtual.getFilhos();
-                    
-                } else {
-                    result = "Caminho não pode ser acessado";
-                }
-            }
-        }
-
         //fim da implementacao do aluno
         return result;
     }
