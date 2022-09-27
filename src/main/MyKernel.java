@@ -1,21 +1,21 @@
 package main;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 import operatingSystem.Kernel;
 
 /**
  * Kernel desenvolvido pelo aluno. Outras classes criadas pelo aluno podem ser
  * utilizadas, como por exemplo: - Arvores; - Filas; - Pilhas; - etc...
  *
- * @author Vitor 
+ * @author nome do aluno...
  */
 public class MyKernel implements Kernel {
 
-    public MyKernel() {
+    Diretorio raiz = new Diretorio(null);
+    Diretorio dirAtual = new Diretorio(raiz);
 
+    public MyKernel() {
+        raiz.setPai(raiz);
+        dirAtual = raiz;
     }
 
     public String ls(String parameters) {
@@ -31,6 +31,24 @@ public class MyKernel implements Kernel {
         return result;
     }
 
+    private Diretorio verificaCaminho(String Caminho[]) {
+        Diretorio dirTemp;
+        
+        if (Caminho == null) {
+            return null;
+        } else {
+            if (Caminho[0].equals("")) {
+                dirTemp = raiz;
+            } else {
+                dirTemp = dirAtual;
+            }
+        }
+        
+        dirTemp = dirTemp.buscaCaminho(dirTemp, Caminho);
+        
+        return dirTemp;
+    }
+
     public String mkdir(String parameters) {
         //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
         String result = "";
@@ -38,6 +56,21 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        String[] caminho = parameters.split("/");
+        String nome = caminho[caminho.length - 1];
+        
+        Diretorio dirTemp = verificaCaminho(caminho);
+        
+        if (dirTemp != null) {            
+            Diretorio novo = new Diretorio(dirTemp);
+            novo.setNome(nome);
+                
+            dirTemp.getFilhos().add(novo);
+            System.out.println(dirTemp.getFilhos().size());
+
+        } else {
+            result = "Erro na criação da pasta";
+        }
         //fim da implementacao do aluno
         return result;
     }
