@@ -40,18 +40,24 @@ public class Diretorio {
         this.Filhos = Filhos;
     }
 
-    public Diretorio buscaCaminho(Diretorio inicio, String caminho[]) {
+    public Diretorio buscaCaminho(Diretorio inicio, String caminho[], boolean finalCaminho) {
         Diretorio dirTemp = inicio;
-        int i = 1;
+        int i = 0, max = caminho.length;
         boolean achou = false;
+        
+        if(!finalCaminho){
+            max--;
+            i = 1;
+        }
 
-        for (; i < caminho.length - 1; i++) {
+        for (; i < max; i++) {
             if (caminho[i].equals(".")) {
                 dirTemp = dirTemp;
             } else if (caminho[i].equals("..")) {
                 dirTemp = dirTemp.getPai();
             } else {
                 for (Diretorio atual : dirTemp.getFilhos()) {
+                    
                     if (atual.getNome().equals(caminho[i])) {
                         dirTemp = atual;
                         achou = true;

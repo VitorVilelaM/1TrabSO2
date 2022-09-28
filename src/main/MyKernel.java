@@ -1,5 +1,6 @@
 package main;
 
+import jdk.tools.jlink.plugin.Plugin;
 import operatingSystem.Kernel;
 
 /**
@@ -31,7 +32,7 @@ public class MyKernel implements Kernel {
         return result;
     }
 
-    private Diretorio verificaCaminho(String Caminho[]) {
+    private Diretorio verificaCaminho(String Caminho[], boolean finalCaminho) {
         Diretorio dirTemp;
 
         if (Caminho == null) {
@@ -44,7 +45,7 @@ public class MyKernel implements Kernel {
             }
         }
 
-        dirTemp = dirTemp.buscaCaminho(dirTemp, Caminho);
+        dirTemp = dirTemp.buscaCaminho(dirTemp, Caminho, finalCaminho);
 
         return dirTemp;
     }
@@ -72,16 +73,15 @@ public class MyKernel implements Kernel {
         String[] caminho = parameters.split("/");
         String nome = caminho[caminho.length - 1];
 
-        Diretorio dirTemp = verificaCaminho(caminho);
+        Diretorio dirTemp = verificaCaminho(caminho, false);
 
         if (dirTemp != null) {
             if (verificaNome(nome)) {
-                Diretorio novo = new Diretorio(null);
                 if (dirTemp.verificaNomeFilhos(dirTemp, nome)) {
+                    Diretorio novo = new Diretorio(dirTemp);
                     novo.setNome(nome);
                     dirTemp.getFilhos().add(novo);
-                    System.out.println(dirTemp.getFilhos().size());
-                }else{
+                } else {
                     result = "Ja existe uma pasta com esse nome!";
                 }
             } else {
@@ -102,8 +102,21 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        String[] caminho = parameters.split("/");
+        Diretorio dirTemp = verificaCaminho(caminho, true);
+
+        if (dirTemp != null && dirTemp.verificaNomeFilhos(dirTemp, caminho[caminho.length - 1])) {
+            dirAtual = dirTemp;
+
+            if (dirAtual == raiz) {
+                currentDir = "/";
+            } else {
+                currentDir = dirAtual.getNome();
+            }
+        }else{
+            result = "Diretorio nao encontrado!";
+        }
         //indique o diretório atual. Por exemplo... /
-        currentDir = "/";
 
         //setando parte gráfica do diretorio atual
         operatingSystem.fileSystem.FileSytemSimulator.currentDir = currentDir;
