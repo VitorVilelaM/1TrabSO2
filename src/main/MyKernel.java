@@ -33,7 +33,7 @@ public class MyKernel implements Kernel {
 
     private Diretorio verificaCaminho(String Caminho[]) {
         Diretorio dirTemp;
-        
+
         if (Caminho == null) {
             return null;
         } else {
@@ -43,10 +43,23 @@ public class MyKernel implements Kernel {
                 dirTemp = dirAtual;
             }
         }
-        
+
         dirTemp = dirTemp.buscaCaminho(dirTemp, Caminho);
-        
+
         return dirTemp;
+    }
+
+    public boolean verificaNome(String nome) {
+
+        if (nome.contains(".")) {
+            return false;
+        } else if (nome.trim().equals("")) {
+            return false;
+        } else if ((Character) nome.charAt(0) == '-') {
+            return false;
+        }
+
+        return true;
     }
 
     public String mkdir(String parameters) {
@@ -58,18 +71,24 @@ public class MyKernel implements Kernel {
         //inicio da implementacao do aluno
         String[] caminho = parameters.split("/");
         String nome = caminho[caminho.length - 1];
-        
-        Diretorio dirTemp = verificaCaminho(caminho);
-        
-        if (dirTemp != null) {            
-            Diretorio novo = new Diretorio(dirTemp);
-            novo.setNome(nome);
-                
-            dirTemp.getFilhos().add(novo);
-            System.out.println(dirTemp.getFilhos().size());
 
+        Diretorio dirTemp = verificaCaminho(caminho);
+
+        if (dirTemp != null) {
+            if (verificaNome(nome)) {
+                Diretorio novo = new Diretorio(null);
+                if (dirTemp.verificaNomeFilhos(dirTemp, nome)) {
+                    novo.setNome(nome);
+                    dirTemp.getFilhos().add(novo);
+                    System.out.println(dirTemp.getFilhos().size());
+                }else{
+                    result = "Ja existe uma pasta com esse nome!";
+                }
+            } else {
+                result = "Nome informado é invalido!";
+            }
         } else {
-            result = "Erro na criação da pasta";
+            result = "Erro no caminho informado!";
         }
         //fim da implementacao do aluno
         return result;

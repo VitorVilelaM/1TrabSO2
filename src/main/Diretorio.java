@@ -39,11 +39,12 @@ public class Diretorio {
     public void setFilhos(ArrayList<Diretorio> Filhos) {
         this.Filhos = Filhos;
     }
-    
+
     public Diretorio buscaCaminho(Diretorio inicio, String caminho[]) {
         Diretorio dirTemp = inicio;
         int i = 1;
-        
+        boolean achou = false;
+
         for (; i < caminho.length - 1; i++) {
             if (caminho[i].equals(".")) {
                 dirTemp = dirTemp;
@@ -51,16 +52,26 @@ public class Diretorio {
                 dirTemp = dirTemp.getPai();
             } else {
                 for (Diretorio atual : dirTemp.getFilhos()) {
-                    System.out.println(atual.getNome());
                     if (atual.getNome().equals(caminho[i])) {
                         dirTemp = atual;
-                    } else {
-                        return null;
+                        achou = true;
                     }
                 }
-                
+                if (!achou) {
+                    return null;
+                }
+
             }
         }
         return dirTemp;
+    }
+
+    public boolean verificaNomeFilhos(Diretorio dirTemp, String nome) {
+        for (Diretorio atual : dirTemp.getFilhos()) {
+            if (atual.getNome().equals(nome)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
