@@ -60,23 +60,37 @@ public class MyKernel implements Kernel {
         Diretorio dirTemp;
         String[] instrucao = parameters.split(" ");
 
-        System.out.println(instrucao.length);
-
         if (instrucao.length == 1) {
+
+            System.out.println(instrucao[0].equals(""));
+
             dirTemp = dirAtual;
-                
+
             if (instrucao[0].equals("-l")) {
                 for (Diretorio dirTempo : dirTemp.getFilhos()) {
-                    result += dirTempo.getPermissao() +" "+ dirTempo.getDataCriacao() +" "+ dirTempo.getNome() +  "\n";
+                    result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
                 }
-                
+
+            } else if (instrucao[0].equals("")) {
+                for (Diretorio dirTempo : dirTemp.getFilhos()) {
+                    result += dirTempo.getNome() + " ";
+                }
             } else {
+                String[] caminho = instrucao[0].split("/");
+                dirTemp = verificaCaminho(caminho, true);
+
                 for (Diretorio dirTempo : dirTemp.getFilhos()) {
                     result += dirTempo.getNome() + " ";
                 }
             }
-        }else{
-            System.out.println("ls -l caminho");
+
+        } else {
+            String[] caminho = instrucao[1].split("/");
+            dirTemp = verificaCaminho(caminho, true);
+
+            for (Diretorio dirTempo : dirTemp.getFilhos()) {
+                result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
+            }
         }
         //fim da implementacao do aluno
         return result;
@@ -121,6 +135,7 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        System.out.println(dirAtual.getNome());
         String[] caminho = parameters.split("/");
         Diretorio dirTemp = verificaCaminho(caminho, true);
 
