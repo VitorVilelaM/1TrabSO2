@@ -19,19 +19,6 @@ public class MyKernel implements Kernel {
         dirAtual = raiz;
     }
 
-    public String ls(String parameters) {
-        //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
-        String result = "";
-        System.out.println("Chamada de Sistema: ls");
-        System.out.println("\tParametros: " + parameters);
-
-        //inicio da implementacao do aluno
-        System.out.println("ola pessoal!");
-
-        //fim da implementacao do aluno
-        return result;
-    }
-
     private Diretorio verificaCaminho(String Caminho[], boolean finalCaminho) {
         Diretorio dirTemp;
 
@@ -61,6 +48,38 @@ public class MyKernel implements Kernel {
         }
 
         return true;
+    }
+
+    public String ls(String parameters) {
+        //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+        String result = "";
+        System.out.println("Chamada de Sistema: ls");
+        System.out.println("\tParametros: " + parameters);
+
+        //inicio da implementacao do aluno
+        Diretorio dirTemp;
+        String[] instrucao = parameters.split(" ");
+
+        System.out.println(instrucao.length);
+
+        if (instrucao.length == 1) {
+            dirTemp = dirAtual;
+                
+            if (instrucao[0].equals("-l")) {
+                for (Diretorio dirTempo : dirTemp.getFilhos()) {
+                    result += dirTempo.getPermissao() +" "+ dirTempo.getDataCriacao() +" "+ dirTempo.getNome() +  "\n";
+                }
+                
+            } else {
+                for (Diretorio dirTempo : dirTemp.getFilhos()) {
+                    result += dirTempo.getNome() + " ";
+                }
+            }
+        }else{
+            System.out.println("ls -l caminho");
+        }
+        //fim da implementacao do aluno
+        return result;
     }
 
     public String mkdir(String parameters) {
@@ -113,7 +132,7 @@ public class MyKernel implements Kernel {
             } else {
                 currentDir = dirAtual.getNome();
             }
-        }else{
+        } else {
             result = "Diretorio nao encontrado!";
         }
         //indique o diretório atual. Por exemplo... /
