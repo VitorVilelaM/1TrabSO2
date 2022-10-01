@@ -135,7 +135,6 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        System.out.println(dirAtual.getNome());
         String[] caminho = parameters.split("/");
         Diretorio dirTemp = verificaCaminho(caminho, true);
 
@@ -166,7 +165,23 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        //fim da implementacao do aluno
+        String[] caminho = parameters.split("/");
+        String nome = caminho[caminho.length - 1];
+        int i = 0;
+        Diretorio dirTemp = verificaCaminho(caminho, false);
+
+        for (Diretorio dirRem : dirTemp.getFilhos()) {
+            if (dirRem.getNome().equals(nome) && (dirRem.getFilhos().size() == 0)) {
+                dirTemp.getFilhos().remove(i);
+                i = 0;
+            } else {
+                i++;
+            }
+        }
+        if(i > 0){
+            result = "Nao foi possivel remover esse diretorio!";
+        }
+//fim da implementacao do aluno
         return result;
     }
 
