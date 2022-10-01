@@ -59,10 +59,7 @@ public class MyKernel implements Kernel {
         //inicio da implementacao do aluno
         Diretorio dirTemp;
         String[] instrucao = parameters.split(" ");
-
         if (instrucao.length == 1) {
-
-            System.out.println(instrucao[0].equals(""));
 
             dirTemp = dirAtual;
 
@@ -170,16 +167,18 @@ public class MyKernel implements Kernel {
         int i = 0;
         Diretorio dirTemp = verificaCaminho(caminho, false);
 
-        for (Diretorio dirRem : dirTemp.getFilhos()) {
-            if (dirRem.getNome().equals(nome) && (dirRem.getFilhos().size() == 0)) {
-                dirTemp.getFilhos().remove(i);
-                i = 0;
+        for (int j = 0; j < dirTemp.getFilhos().size(); j++) {
+            System.out.println(dirTemp.getFilhos().get(j).getNome().equals(nome));
+            if (dirTemp.getFilhos().get(j).getNome().equals(nome)) {
+                if (dirTemp.getFilhos().get(i).getFilhos().size() == 0) {
+                    dirTemp.getFilhos().remove(i);
+                    i = 0;
+                }else{
+                    result = "possui arquivos e/ou diretorios. (Nada foi removido)";
+                }
             } else {
                 i++;
             }
-        }
-        if(i > 0){
-            result = "Nao foi possivel remover esse diretorio!";
         }
 //fim da implementacao do aluno
         return result;
