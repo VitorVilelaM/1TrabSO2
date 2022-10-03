@@ -279,11 +279,11 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: sem parametros");
 
         //nome do aluno
-        String name = "Fulano da Silva";
+        String name = "Vitor Vilela";
         //numero de matricula
-        String registration = "2001.xx.yy.00.11";
+        String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "0.1";
+        String version = "1.0";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;
