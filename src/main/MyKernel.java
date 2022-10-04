@@ -72,6 +72,9 @@ public class MyKernel implements Kernel {
                 for (Diretorio dirTempo : dirTemp.getFilhos()) {
                     result += dirTempo.getNome() + " ";
                 }
+                for (Arquivos arqTempo : dirTemp.getArquivos()) {
+                    result += arqTempo.getNome() + " ";
+                }
             } else {
                 String[] caminho = instrucao[0].split("/");
                 dirTemp = verificaCaminho(caminho, true);
@@ -87,7 +90,7 @@ public class MyKernel implements Kernel {
 
             for (Diretorio dirTempo : dirTemp.getFilhos()) {
                 result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
-            }
+            }    
         }
         //fim da implementacao do aluno
         return result;
@@ -164,21 +167,25 @@ public class MyKernel implements Kernel {
         //inicio da implementacao do aluno
         String[] caminho = parameters.split("/");
         String nome = caminho[caminho.length - 1];
-        int i = 0;
+        int j, i = 0;
         Diretorio dirTemp = verificaCaminho(caminho, false);
 
-        for (int j = 0; j < dirTemp.getFilhos().size(); j++) {
+        for (j = 0; j < dirTemp.getFilhos().size(); j++) {
             System.out.println(dirTemp.getFilhos().get(j).getNome().equals(nome));
             if (dirTemp.getFilhos().get(j).getNome().equals(nome)) {
                 if (dirTemp.getFilhos().get(i).getFilhos().size() == 0) {
                     dirTemp.getFilhos().remove(i);
                     i = 0;
+                    return result;
                 }else{
                     result = "possui arquivos e/ou diretorios. (Nada foi removido)";
                 }
             } else {
                 i++;
             }
+        }
+        if(j == dirTemp.getFilhos().size()){
+            result = "diretorio nao encontrado";
         }
 //fim da implementacao do aluno
         return result;
@@ -233,8 +240,31 @@ public class MyKernel implements Kernel {
         String result = "";
         System.out.println("Chamada de Sistema: createfile");
         System.out.println("\tParametros: " + parameters);
-
+        
         //inicio da implementacao do aluno
+        String[] comando = parameters.split(".txt");
+        String[] caminho = comando[0].split("/");
+        String[] conteudo = comando[1].split("\n");
+        String nome = caminho[caminho.length - 1];
+                
+        Diretorio dirTemp = verificaCaminho(caminho, false);
+        if (dirTemp != null) {
+            if (verificaNome(nome)) {
+                if (dirTemp.verificaNomeArquivos(dirTemp, nome)) {
+                    Arquivos novo = new Arquivos(dirTemp);
+                    nome = nome  + ".txt";
+                    novo.setNome(nome);
+                    dirTemp.getArquivos().add(novo);
+                } else {
+                    result = "Ja existe um arquivo com esse nome!";
+                }
+            } else {
+                result = "Nome informado é invalido!";
+            }
+        } else {
+            result = "Erro no caminho informado!";
+        }
+        
         //fim da implementacao do aluno
         return result;
     }

@@ -111,4 +111,13 @@ public class Diretorio {
         }
         return true;
     }
+    
+    public boolean verificaNomeArquivos(Diretorio dirTemp, String nome) {
+        for (Arquivos atual : dirTemp.getArquivos()) {
+            if (atual.getNome().equals(nome)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
