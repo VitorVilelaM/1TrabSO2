@@ -425,16 +425,16 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        String[] comando = parameters.split(".txt");
+        String[] comando = parameters.split(".txt ");
         String[] caminho = comando[0].split("/");
 
         if (comando.length > 1) {
             String ajuste = comando[1].replace("\\", "/");
             String[] conteudo = ajuste.split("/n");
-            //createfile ./disciplina.txt SistemasOperacionais\nTrabalho Pratico 1
+            //createfile ./disciplina.txt Sistemas Operacionais\nTrabalho Pratico 1
             String nome = caminho[caminho.length - 1];
-            System.out.println(conteudo[1]);
-            
+
+
             Diretorio dirTemp = verificaCaminho(caminho, false);
             if (dirTemp != null) {
                 if (verificaNome(nome)) {
@@ -442,8 +442,11 @@ public class MyKernel implements Kernel {
                         Arquivos novo = new Arquivos(dirTemp);
                         nome = nome + ".txt";
                         novo.setNome(nome);
-                        for(int i = 0; i < conteudo.length; i++) novo.getConteudo().add(conteudo[i]);
                         dirTemp.getArquivos().add(novo);
+         
+                        for (int i = 0; i < conteudo.length; i++) {
+                            novo.getConteudo().add(i,conteudo[i]);
+                        }
                     } else {
                         result = "Ja existe um arquivo com esse nome!";
                     }
@@ -468,6 +471,31 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        String[] caminho = parameters.split("/");
+        int i, j = 0;
+        if (caminho != null) {
+            Diretorio dirTemp = verificaCaminho(caminho, false);
+            String nome = caminho[caminho.length - 1];
+
+            if (dirTemp != null) {
+                for (Arquivos atual : dirTemp.getArquivos()) {
+                    if (atual.getNome().equals(nome)) {                   
+                        for(i = 0; i < atual.getConteudo().size(); i++){
+                            System.out.println(atual.getConteudo().size());
+                            result += atual.getConteudo().get(i) + "\n"; 
+                        }
+                    }else{
+                       j++;
+                    }
+                }
+                if(j == dirTemp.getArquivos().size()) result = "arquivo não encontrado"; 
+                
+            } else {
+                result = "nao foi possivel encontrar esse diretorio";
+            }
+        } else {
+            result = "comando incorreto";
+        }
         //fim da implementacao do aluno
         return result;
     }
