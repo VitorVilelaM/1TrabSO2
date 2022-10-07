@@ -429,10 +429,12 @@ public class MyKernel implements Kernel {
         String[] caminho = comando[0].split("/");
 
         if (comando.length > 1) {
-            //String[] conteudo = comando[1].split(comando[comando[1].indexOf("\\n")]);
+            String ajuste = comando[1].replace("\\", "/");
+            String[] conteudo = ajuste.split("/n");
             //createfile ./disciplina.txt SistemasOperacionais\nTrabalho Pratico 1
             String nome = caminho[caminho.length - 1];
-
+            System.out.println(conteudo[1]);
+            
             Diretorio dirTemp = verificaCaminho(caminho, false);
             if (dirTemp != null) {
                 if (verificaNome(nome)) {
@@ -440,6 +442,7 @@ public class MyKernel implements Kernel {
                         Arquivos novo = new Arquivos(dirTemp);
                         nome = nome + ".txt";
                         novo.setNome(nome);
+                        for(int i = 0; i < conteudo.length; i++) novo.getConteudo().add(conteudo[i]);
                         dirTemp.getArquivos().add(novo);
                     } else {
                         result = "Ja existe um arquivo com esse nome!";

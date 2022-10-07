@@ -15,7 +15,15 @@ import java.util.Date;
 public class Arquivos {
     private String nome;
     private Diretorio pai;
-    private ArrayList<String> conteudo = new ArrayList();
+    private ArrayList<String> Conteudo = new ArrayList();
+
+    public ArrayList<String> getConteudo() {
+        return Conteudo;
+    }
+
+    public void setConteudo(ArrayList<String> Conteudo) {
+        this.Conteudo = Conteudo;
+    }
     private String permissao;
     private String dataCriacao;
     
