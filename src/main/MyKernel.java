@@ -90,7 +90,7 @@ public class MyKernel implements Kernel {
 
             for (Diretorio dirTempo : dirTemp.getFilhos()) {
                 result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
-            }    
+            }
         }
         //fim da implementacao do aluno
         return result;
@@ -171,20 +171,19 @@ public class MyKernel implements Kernel {
         Diretorio dirTemp = verificaCaminho(caminho, false);
 
         for (j = 0; j < dirTemp.getFilhos().size(); j++) {
-            System.out.println(dirTemp.getFilhos().get(j).getNome().equals(nome));
             if (dirTemp.getFilhos().get(j).getNome().equals(nome)) {
                 if (dirTemp.getFilhos().get(i).getFilhos().size() == 0) {
                     dirTemp.getFilhos().remove(i);
                     i = 0;
                     return result;
-                }else{
+                } else {
                     result = "possui arquivos e/ou diretorios. (Nada foi removido)";
                 }
             } else {
                 i++;
             }
         }
-        if(j == dirTemp.getFilhos().size()){
+        if (j == dirTemp.getFilhos().size()) {
             result = "diretorio nao encontrado";
         }
 //fim da implementacao do aluno
@@ -198,6 +197,40 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        int i = 0,j;
+        String[] comando = parameters.split(" ");
+        System.out.println(comando[0].contains("R"));
+        if (comando.length == 2 && !comando[0].contains("R")) {
+            String[] caminho1 = comando[0].split("/");
+            String[] caminho2 = comando[1].split("/");
+            String nome = caminho1[caminho1.length - 1];
+            
+            Diretorio dirOrigem = verificaCaminho(caminho1, false);
+            Diretorio dirDestino = verificaCaminho(caminho2, true);
+
+            for (j = 0; j < dirOrigem.getArquivos().size(); j++) {
+                if (dirOrigem.getArquivos().get(j).getNome().equals(nome)) {
+                    if (dirDestino.verificaNomeArquivos(dirDestino, nome)) {
+                        dirDestino.getArquivos().add(dirOrigem.getArquivos().get(i));
+                        i = 0;
+                        return result;
+                    } else {
+                        result = "diretorio destino ja possui esse arquivo";
+                    }
+                } else {
+                    i++;
+                }
+            }
+            if (j == dirOrigem.getArquivos().size()) {
+                result = "Arquivo nao encontrado";
+            }
+
+        } else if (comando.length == 3) {
+
+        } else {
+            result = "comando incorreto";
+        }
+
         //fim da implementacao do aluno
         return result;
     }
@@ -240,31 +273,38 @@ public class MyKernel implements Kernel {
         String result = "";
         System.out.println("Chamada de Sistema: createfile");
         System.out.println("\tParametros: " + parameters);
-        
+
         //inicio da implementacao do aluno
         String[] comando = parameters.split(".txt");
         String[] caminho = comando[0].split("/");
-        String[] conteudo = comando[1].split("\n");
-        String nome = caminho[caminho.length - 1];
-                
-        Diretorio dirTemp = verificaCaminho(caminho, false);
-        if (dirTemp != null) {
-            if (verificaNome(nome)) {
-                if (dirTemp.verificaNomeArquivos(dirTemp, nome)) {
-                    Arquivos novo = new Arquivos(dirTemp);
-                    nome = nome  + ".txt";
-                    novo.setNome(nome);
-                    dirTemp.getArquivos().add(novo);
+
+        if (comando.length > 1) {
+            String[] conteudo = comando[1].split("\\n");
+            //createfile ./disciplina.txt SistemasOperacionais\nTrabalho Pratico 1
+            System.out.println(conteudo[0]);
+            String nome = caminho[caminho.length - 1];
+
+            Diretorio dirTemp = verificaCaminho(caminho, false);
+            if (dirTemp != null) {
+                if (verificaNome(nome)) {
+                    if (dirTemp.verificaNomeArquivos(dirTemp, nome)) {
+                        Arquivos novo = new Arquivos(dirTemp);
+                        nome = nome + ".txt";
+                        novo.setNome(nome);
+                        dirTemp.getArquivos().add(novo);
+                    } else {
+                        result = "Ja existe um arquivo com esse nome!";
+                    }
                 } else {
-                    result = "Ja existe um arquivo com esse nome!";
+                    result = "Nome informado é invalido!";
                 }
             } else {
-                result = "Nome informado é invalido!";
+                result = "Erro no caminho informado!";
             }
         } else {
-            result = "Erro no caminho informado!";
+            result = "Erro no comando inserido";
         }
-        
+
         //fim da implementacao do aluno
         return result;
     }
