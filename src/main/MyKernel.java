@@ -202,14 +202,14 @@ public class MyKernel implements Kernel {
         String[] comando = parameters.split(" ");
 
         if (comando.length == 2 && !comando[0].contains("R")) {
-            
+
             String[] caminho1 = comando[0].split("/");
             String[] caminho2 = comando[1].split("/");
             String nome = caminho1[caminho1.length - 1];
             String novoNome = "";
             Diretorio dirOrigem = verificaCaminho(caminho1, false);
             Diretorio dirDestino;
-            
+
             if (caminho2[caminho2.length - 1].contains(".txt")) {
                 dirDestino = verificaCaminho(caminho2, false);
                 mudarNome = true;
@@ -297,6 +297,50 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        int i = 0, j;
+        String[] comando = parameters.split(" ");
+        if (comando.length == 1 && !comando[0].contains("R")) {
+
+            String[] caminho1 = comando[0].split("/");
+            String nome = caminho1[caminho1.length - 1];
+            Diretorio dirOrigem = verificaCaminho(caminho1, false);
+
+            for (j = 0; j < dirOrigem.getArquivos().size(); j++) {
+                if (dirOrigem.getArquivos().get(j).getNome().equals(nome)) {
+                    dirOrigem.getArquivos().remove(i);
+                    i = 0;
+                    return result;
+                } else {
+                    i++;
+                }
+            }
+            if(j == dirOrigem.getArquivos().size()){
+                result = "Arquivo nao existente!";
+            }
+
+        } else if (comando.length == 2 && comando[0].contains("R")) {
+
+            String[] caminho1 = comando[1].split("/");
+            String nome = caminho1[caminho1.length - 1];
+            Diretorio dirOrigem = verificaCaminho(caminho1, false);
+
+            for (j = 0; j < dirOrigem.getFilhos().size(); j++) {
+                if (dirOrigem.getFilhos().get(j).getNome().equals(nome)) {
+                    dirOrigem.getFilhos().remove(i);
+                    i = 0;
+                    return result;
+                } else {
+                    i++;
+                }
+            }
+            if(j == dirOrigem.getFilhos().size()){
+                result = "Arquivo nao existente!";
+            }
+
+        } else {
+            result = "comando incorreto";
+        }
+
         //fim da implementacao do aluno
         return result;
     }
