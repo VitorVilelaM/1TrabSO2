@@ -286,6 +286,68 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        int i = 0, j;
+        boolean mudarNome = false;
+        String[] comando = parameters.split(" ");
+
+        if (comando.length == 2) {
+            String[] caminho1 = comando[0].split("/");
+            String[] caminho2 = comando[1].split("/");
+            String nome = caminho1[caminho1.length - 1];
+            String novoNome = "";
+            Diretorio dirOrigem = verificaCaminho(caminho1, false);
+            Diretorio dirDestino = verificaCaminho(caminho2, true);
+
+            if (nome.contains(".txt")) {
+                for (j = 0; j < dirOrigem.getArquivos().size(); j++) {
+                    if (dirOrigem.getArquivos().get(j).getNome().equals(nome)) {
+                        if (dirDestino.verificaNomeArquivos(dirDestino, nome)) {
+                            if (mudarNome) {
+                                Arquivos arqAux = dirOrigem.getArquivos().remove(i);
+                                arqAux.setNome(novoNome);
+                                dirDestino.getArquivos().add(arqAux);
+                                i = 0;
+
+                            } else {
+                                dirDestino.getArquivos().add(dirOrigem.getArquivos().remove(i));
+                                i = 0;
+                            }
+
+                            return result;
+                        } else {
+                            result = "diretorio destino ja possui esse arquivo";
+                        }
+                    } else {
+                        i++;
+                    }
+                    if (j == dirOrigem.getArquivos().size()) {
+                        result = "Arquivo nao encontrado";
+                    }
+                }
+            } else {
+                j = 0;
+                for (j = 0; j < dirOrigem.getFilhos().size(); j++) {
+                    System.out.println(dirOrigem.getNome() + " para " + dirDestino.getNome());
+                    if (dirOrigem.getFilhos().get(j).getNome().equals(nome)) {
+                        if (dirDestino.verificaNomeFilhos(dirDestino, nome)) {
+                            dirDestino.getFilhos().add(dirOrigem.getFilhos().remove(i));
+                            i = 0;
+                            return result;
+                        } else {
+                            result = "diretorio destino ja possui esse diretorio";
+                        }
+                    } else {
+                        i++;
+                    }
+                }
+                if (j == dirOrigem.getFilhos().size()) {
+                    result = "Diretorio nao encontrado";
+                }
+            }
+        } else {
+            result = "comando incorreto";
+        }
+
         //fim da implementacao do aluno
         return result;
     }
@@ -314,7 +376,7 @@ public class MyKernel implements Kernel {
                     i++;
                 }
             }
-            if(j == dirOrigem.getArquivos().size()){
+            if (j == dirOrigem.getArquivos().size()) {
                 result = "Arquivo nao existente!";
             }
 
@@ -333,7 +395,7 @@ public class MyKernel implements Kernel {
                     i++;
                 }
             }
-            if(j == dirOrigem.getFilhos().size()){
+            if (j == dirOrigem.getFilhos().size()) {
                 result = "Arquivo nao existente!";
             }
 
@@ -367,9 +429,8 @@ public class MyKernel implements Kernel {
         String[] caminho = comando[0].split("/");
 
         if (comando.length > 1) {
-            String[] conteudo = comando[1].split("\\n");
+            //String[] conteudo = comando[1].split(comando[comando[1].indexOf("\\n")]);
             //createfile ./disciplina.txt SistemasOperacionais\nTrabalho Pratico 1
-            System.out.println(conteudo[0]);
             String nome = caminho[caminho.length - 1];
 
             Diretorio dirTemp = verificaCaminho(caminho, false);
