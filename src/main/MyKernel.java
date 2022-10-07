@@ -197,22 +197,41 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        int i = 0,j;
+        int i = 0, j;
+        boolean mudarNome = false;
         String[] comando = parameters.split(" ");
-        System.out.println(comando[0].contains("R"));
+
         if (comando.length == 2 && !comando[0].contains("R")) {
+            
             String[] caminho1 = comando[0].split("/");
             String[] caminho2 = comando[1].split("/");
             String nome = caminho1[caminho1.length - 1];
-            
+            String novoNome = "";
             Diretorio dirOrigem = verificaCaminho(caminho1, false);
-            Diretorio dirDestino = verificaCaminho(caminho2, true);
+            Diretorio dirDestino;
+            
+            if (caminho2[caminho2.length - 1].contains(".txt")) {
+                dirDestino = verificaCaminho(caminho2, false);
+                mudarNome = true;
+                novoNome = caminho2[caminho2.length - 1];
+            } else {
+                dirDestino = verificaCaminho(caminho2, true);
+            }
 
             for (j = 0; j < dirOrigem.getArquivos().size(); j++) {
                 if (dirOrigem.getArquivos().get(j).getNome().equals(nome)) {
                     if (dirDestino.verificaNomeArquivos(dirDestino, nome)) {
-                        dirDestino.getArquivos().add(dirOrigem.getArquivos().get(i));
-                        i = 0;
+                        if (mudarNome) {
+                            Arquivos arqAux = dirOrigem.getArquivos().get(i);
+                            arqAux.setNome(novoNome);
+                            dirDestino.getArquivos().add(arqAux);
+                            i = 0;
+
+                        } else {
+                            dirDestino.getArquivos().add(dirOrigem.getArquivos().get(i));
+                            i = 0;
+                        }
+
                         return result;
                     } else {
                         result = "diretorio destino ja possui esse arquivo";
@@ -225,7 +244,32 @@ public class MyKernel implements Kernel {
                 result = "Arquivo nao encontrado";
             }
 
-        } else if (comando.length == 3) {
+        } else if (comando.length == 3 && comando[0].contains("R")) {
+
+            String[] caminho1 = comando[1].split("/");
+            String[] caminho2 = comando[2].split("/");
+            String nome = caminho1[caminho1.length - 1];
+
+            Diretorio dirOrigem = verificaCaminho(caminho1, false);
+            Diretorio dirDestino = verificaCaminho(caminho2, true);
+
+            for (j = 0; j < dirOrigem.getFilhos().size(); j++) {
+                System.out.println(nome);
+                if (dirOrigem.getFilhos().get(j).getNome().equals(nome)) {
+                    if (dirDestino.verificaNomeFilhos(dirDestino, nome)) {
+                        dirDestino.getFilhos().add(dirOrigem.getFilhos().get(i));
+                        i = 0;
+                        return result;
+                    } else {
+                        result = "diretorio destino ja possui esse diretorio";
+                    }
+                } else {
+                    i++;
+                }
+            }
+            if (j == dirOrigem.getFilhos().size()) {
+                result = "Diretorio nao encontrado";
+            }
 
         } else {
             result = "comando incorreto";
