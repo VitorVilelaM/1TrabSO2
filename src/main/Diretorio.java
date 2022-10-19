@@ -7,7 +7,7 @@ import java.util.Date;
  *
  * @author vitor
  */
-public class Diretorio {
+public class Diretorio implements Cloneable{
 
     private String nome;
     private Diretorio pai;
@@ -120,4 +120,12 @@ public class Diretorio {
         }
         return true;
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException{ 
+        
+        return super.clone();
+    }
 }
+
+  

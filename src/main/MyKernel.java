@@ -1,5 +1,7 @@
 package main;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jdk.tools.jlink.plugin.Plugin;
 import operatingSystem.Kernel;
 
@@ -49,7 +51,7 @@ public class MyKernel implements Kernel {
 
         return true;
     }
-
+    
     public String ls(String parameters) {
         //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
         String result = "";
@@ -254,15 +256,23 @@ public class MyKernel implements Kernel {
             Diretorio dirDestino = verificaCaminho(caminho2, true);
 
             for (j = 0; j < dirOrigem.getFilhos().size(); j++) {
-                System.out.println(nome);
+                
                 if (dirOrigem.getFilhos().get(j).getNome().equals(nome)) {
                     if (dirDestino.verificaNomeFilhos(dirDestino, nome)) {
-                        dirDestino.getFilhos().add(dirOrigem.getFilhos().get(i));
+                        Diretorio novo = null;
+                        try {
+                            novo = (Diretorio) dirOrigem.getFilhos().get(i).clone();
+                        } catch (CloneNotSupportedException ex) {
+                            Logger.getLogger(MyKernel.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        novo.setPai(dirDestino);
+                        dirDestino.getFilhos().add(novo);
                         i = 0;
                         return result;
                     } else {
                         result = "diretorio destino ja possui esse diretorio";
                     }
+                
                 } else {
                     i++;
                 }
@@ -361,7 +371,7 @@ public class MyKernel implements Kernel {
         //inicio da implementacao do aluno
         int i = 0, j;
         String[] comando = parameters.split(" ");
-        if (comando.length == 1 && !comando[0].contains("R")) {
+        if (comando.length == 1 && !comando[0].contains("-R")) {
 
             String[] caminho1 = comando[0].split("/");
             String nome = caminho1[caminho1.length - 1];
@@ -414,6 +424,33 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        String[] comando = parameters.split(" "), caminho;
+        String nome;
+        Arquivos arqModificado;
+        Diretorio dirOrigem;
+        int i, j;
+        if (comando.length == 3 && !comando[0].contains("-R")) {
+
+            caminho = comando[2].split("/");
+            nome = caminho[caminho.length - 1];
+            dirOrigem = verificaCaminho(caminho, false);
+
+        } else if (comando.length == 2) {
+
+            caminho = comando[1].split("/");
+            nome = caminho[caminho.length - 1];
+            
+            if (nome.contains(".txt")) {
+                dirOrigem = verificaCaminho(caminho, false);
+                
+            } else {
+                dirOrigem = verificaCaminho(caminho, true);
+                
+            }
+
+        } else {
+            result = "comando incorreto";
+        }
         //fim da implementacao do aluno
         return result;
     }
@@ -434,7 +471,6 @@ public class MyKernel implements Kernel {
             //createfile ./disciplina.txt Sistemas Operacionais\nTrabalho Pratico 1
             String nome = caminho[caminho.length - 1];
 
-
             Diretorio dirTemp = verificaCaminho(caminho, false);
             if (dirTemp != null) {
                 if (verificaNome(nome)) {
@@ -443,9 +479,9 @@ public class MyKernel implements Kernel {
                         nome = nome + ".txt";
                         novo.setNome(nome);
                         dirTemp.getArquivos().add(novo);
-         
+
                         for (int i = 0; i < conteudo.length; i++) {
-                            novo.getConteudo().add(i,conteudo[i]);
+                            novo.getConteudo().add(i, conteudo[i]);
                         }
                     } else {
                         result = "Ja existe um arquivo com esse nome!";
@@ -476,20 +512,21 @@ public class MyKernel implements Kernel {
         if (caminho != null) {
             Diretorio dirTemp = verificaCaminho(caminho, false);
             String nome = caminho[caminho.length - 1];
-
+            
             if (dirTemp != null) {
                 for (Arquivos atual : dirTemp.getArquivos()) {
-                    if (atual.getNome().equals(nome)) {                   
-                        for(i = 0; i < atual.getConteudo().size(); i++){
-                            System.out.println(atual.getConteudo().size());
-                            result += atual.getConteudo().get(i) + "\n"; 
+                    if (atual.getNome().equals(nome)) {
+                        for (i = 0; i < atual.getConteudo().size(); i++) {
+                            result += atual.getConteudo().get(i) + "\n";
                         }
-                    }else{
-                       j++;
+                    } else {
+                        j++;
                     }
                 }
-                if(j == dirTemp.getArquivos().size()) result = "arquivo não encontrado"; 
-                
+                if (j == dirTemp.getArquivos().size()) {
+                    result = "arquivo não encontrado";
+                }
+
             } else {
                 result = "nao foi possivel encontrar esse diretorio";
             }
@@ -533,7 +570,7 @@ public class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.0";
+        String version = "1.18";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;
