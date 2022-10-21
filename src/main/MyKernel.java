@@ -51,7 +51,7 @@ public class MyKernel implements Kernel {
 
         return true;
     }
-    
+
     public String ls(String parameters) {
         //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
         String result = "";
@@ -256,7 +256,7 @@ public class MyKernel implements Kernel {
             Diretorio dirDestino = verificaCaminho(caminho2, true);
 
             for (j = 0; j < dirOrigem.getFilhos().size(); j++) {
-                
+
                 if (dirOrigem.getFilhos().get(j).getNome().equals(nome)) {
                     if (dirDestino.verificaNomeFilhos(dirDestino, nome)) {
                         Diretorio novo = null;
@@ -272,7 +272,7 @@ public class MyKernel implements Kernel {
                     } else {
                         result = "diretorio destino ja possui esse diretorio";
                     }
-                
+
                 } else {
                     i++;
                 }
@@ -429,30 +429,61 @@ public class MyKernel implements Kernel {
         Arquivos arqModificado;
         Diretorio dirOrigem;
         int i, j;
+        String newPermission;
+
         if (comando.length == 3 && !comando[0].contains("-R")) {
 
-            caminho = comando[2].split("/");
-            nome = caminho[caminho.length - 1];
+            newPermission = converteCHMOD(comando[0].split(""));
+            caminho = comando[1].split("/");
             dirOrigem = verificaCaminho(caminho, false);
 
-        } else if (comando.length == 2) {
+            if (dirOrigem != null) {
 
-            caminho = comando[1].split("/");
-            nome = caminho[caminho.length - 1];
-            
-            if (nome.contains(".txt")) {
-                dirOrigem = verificaCaminho(caminho, false);
-                
             } else {
-                dirOrigem = verificaCaminho(caminho, true);
-                
+                result = "diretorio nao encontrado";
             }
 
+
+        } else if (comando.length == 2) {
+            
+            caminho = comando[1].split("/");
+            nome = caminho[caminho.length - 1];
+            newPermission = converteCHMOD(comando[0].split(""));
+
+            if (nome.contains(".txt")) {
+                newPermission = "-" + newPermission;
+                dirOrigem = verificaCaminho(caminho, false);
+
+                Arquivos arqDestino = dirOrigem.buscaArquivoPorNome(dirOrigem, nome);
+                arqDestino.setPermissao(newPermission);
+
+            } else {              
+                newPermission = "d" + newPermission;
+                dirOrigem = verificaCaminho(caminho, true);
+                dirOrigem.setPermissao(newPermission);
+            }
         } else {
             result = "comando incorreto";
         }
         //fim da implementacao do aluno
         return result;
+    }
+
+    public String converteCHMOD(String[] chmod) {
+        String permissao = "";
+
+        for(String position: chmod){
+            if(position.equals("0")){permissao =permissao+ "---";}
+            if(position.equals("1")){permissao =permissao+ "--x";}
+            if(position.equals("2")){permissao =permissao+ "-w-";}
+            if(position.equals("3")){permissao =permissao+ "-wx";}
+            if(position.equals("4")){permissao =permissao+ "r--";}
+            if(position.equals("5")){permissao =permissao+ "r-x";}
+            if(position.equals("6")){permissao =permissao+ "rw-";}
+            if(position.equals("7")){permissao =permissao+ "rwx";}
+        }
+        
+        return permissao;
     }
 
     public String createfile(String parameters) {
@@ -512,7 +543,7 @@ public class MyKernel implements Kernel {
         if (caminho != null) {
             Diretorio dirTemp = verificaCaminho(caminho, false);
             String nome = caminho[caminho.length - 1];
-            
+
             if (dirTemp != null) {
                 for (Arquivos atual : dirTemp.getArquivos()) {
                     if (atual.getNome().equals(nome)) {
@@ -570,7 +601,7 @@ public class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.18";
+        String version = "1.19";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;

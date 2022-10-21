@@ -13,9 +13,12 @@ import java.util.Date;
  * @author vitor
  */
 public class Arquivos {
+
     private String nome;
     private Diretorio pai;
     private ArrayList<String> Conteudo = new ArrayList();
+    private String permissao;
+    private String dataCriacao;
 
     public ArrayList<String> getConteudo() {
         return Conteudo;
@@ -24,9 +27,7 @@ public class Arquivos {
     public void setConteudo(ArrayList<String> Conteudo) {
         this.Conteudo = Conteudo;
     }
-    private String permissao;
-    private String dataCriacao;
-    
+
     public Arquivos(Diretorio dir) {
         this.pai = dir;
         this.permissao = "-rwxrwxrwx";
@@ -37,7 +38,7 @@ public class Arquivos {
     public String getNome() {
         return nome;
     }
-    
+
     public void setNome(String nome) {
         this.nome = nome;
     }

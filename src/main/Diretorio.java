@@ -3,16 +3,19 @@ package main;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
 /**
  *
  * @author vitor
  */
-public class Diretorio implements Cloneable{
+public class Diretorio implements Cloneable {
 
     private String nome;
     private Diretorio pai;
     private ArrayList<Diretorio> Filhos = new ArrayList();
     private ArrayList<Arquivos> Arquivos = new ArrayList();
+    private String permissao;
+    private String dataCriacao;
 
     public String getDataCriacao() {
         return dataCriacao;
@@ -21,12 +24,10 @@ public class Diretorio implements Cloneable{
     public void setDataCriacao(String dataCriacao) {
         this.dataCriacao = dataCriacao;
     }
-    private String permissao;
-    private String dataCriacao;
-    
+
     public Diretorio(Diretorio dir) {
         this.pai = dir;
-        this.permissao = "-rwxrwxrwx";
+        this.permissao = "drwxrwxrwx";
         SimpleDateFormat formato = new SimpleDateFormat("MMM dd yyyy HH:mm");
         this.dataCriacao = formato.format(new Date());
     }
@@ -54,8 +55,8 @@ public class Diretorio implements Cloneable{
     public void setFilhos(ArrayList<Diretorio> Filhos) {
         this.Filhos = Filhos;
     }
-    
-     public ArrayList<Arquivos> getArquivos() {
+
+    public ArrayList<Arquivos> getArquivos() {
         return Arquivos;
     }
 
@@ -75,8 +76,8 @@ public class Diretorio implements Cloneable{
         Diretorio dirTemp = inicio;
         int i = 0, max = caminho.length;
         boolean achou = false;
-        
-        if(!finalCaminho){
+
+        if (!finalCaminho) {
             max--;
             i = 1;
         }
@@ -88,7 +89,7 @@ public class Diretorio implements Cloneable{
                 dirTemp = dirTemp.getPai();
             } else {
                 for (Diretorio atual : dirTemp.getFilhos()) {
-                    
+
                     if (atual.getNome().equals(caminho[i])) {
                         dirTemp = atual;
                         achou = true;
@@ -111,7 +112,7 @@ public class Diretorio implements Cloneable{
         }
         return true;
     }
-    
+
     public boolean verificaNomeArquivos(Diretorio dirTemp, String nome) {
         for (Arquivos atual : dirTemp.getArquivos()) {
             if (atual.getNome().equals(nome)) {
@@ -121,11 +122,18 @@ public class Diretorio implements Cloneable{
         return true;
     }
 
+    public Arquivos buscaArquivoPorNome(Diretorio dirTemp, String nome) {
+        for (Arquivos atual : dirTemp.getArquivos()) {
+            if (atual.getNome().equals(nome)) {
+                return atual;
+            }
+        }
+        return null;
+    }
+
     @Override
-    public Object clone() throws CloneNotSupportedException{ 
-        
+    public Object clone() throws CloneNotSupportedException {
+
         return super.clone();
     }
 }
-
-  
