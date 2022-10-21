@@ -70,6 +70,10 @@ public class MyKernel implements Kernel {
                     result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
                 }
 
+                for (Arquivos arqAtual : dirTemp.getArquivos()) {
+                    result += arqAtual.getPermissao() + " " + arqAtual.getDataCriacao() + " " + arqAtual.getNome() + "\n";
+                }
+
             } else if (instrucao[0].equals("")) {
                 for (Diretorio dirTempo : dirTemp.getFilhos()) {
                     result += dirTempo.getNome() + " ";
@@ -430,22 +434,23 @@ public class MyKernel implements Kernel {
         Diretorio dirOrigem;
         int i, j;
         String newPermission;
+        
+        if (comando.length == 3 && comando[0].contains("-R")) {
 
-        if (comando.length == 3 && !comando[0].contains("-R")) {
-
-            newPermission = converteCHMOD(comando[0].split(""));
-            caminho = comando[1].split("/");
-            dirOrigem = verificaCaminho(caminho, false);
+            newPermission = converteCHMOD(comando[1].split(""));
+            caminho = comando[2].split("/");
+            dirOrigem = verificaCaminho(caminho, true);
 
             if (dirOrigem != null) {
+                newPermission = newPermission;
+                alteraPermissaoFilhos(dirOrigem, newPermission);
 
             } else {
                 result = "diretorio nao encontrado";
             }
 
-
         } else if (comando.length == 2) {
-            
+
             caminho = comando[1].split("/");
             nome = caminho[caminho.length - 1];
             newPermission = converteCHMOD(comando[0].split(""));
@@ -457,7 +462,7 @@ public class MyKernel implements Kernel {
                 Arquivos arqDestino = dirOrigem.buscaArquivoPorNome(dirOrigem, nome);
                 arqDestino.setPermissao(newPermission);
 
-            } else {              
+            } else {
                 newPermission = "d" + newPermission;
                 dirOrigem = verificaCaminho(caminho, true);
                 dirOrigem.setPermissao(newPermission);
@@ -469,20 +474,55 @@ public class MyKernel implements Kernel {
         return result;
     }
 
+    public void alteraPermissaoFilhos(Diretorio dirOrigem, String permissao) {
+        String permissaoDir = "d" + permissao;
+        String permissaoArq = "-" + permissao;
+
+        for (Diretorio atual : dirOrigem.getFilhos()) {
+            if (atual != null) {
+                alteraPermissaoFilhos(atual, permissao);
+                atual.setPermissao(permissaoDir);
+
+                for (Arquivos arqAtual : atual.getArquivos()) {
+                    arqAtual.setPermissao(permissaoArq);
+                }
+            }
+        }
+        
+        dirOrigem.setPermissao(permissaoDir);
+
+    }
+
     public String converteCHMOD(String[] chmod) {
         String permissao = "";
 
-        for(String position: chmod){
-            if(position.equals("0")){permissao =permissao+ "---";}
-            if(position.equals("1")){permissao =permissao+ "--x";}
-            if(position.equals("2")){permissao =permissao+ "-w-";}
-            if(position.equals("3")){permissao =permissao+ "-wx";}
-            if(position.equals("4")){permissao =permissao+ "r--";}
-            if(position.equals("5")){permissao =permissao+ "r-x";}
-            if(position.equals("6")){permissao =permissao+ "rw-";}
-            if(position.equals("7")){permissao =permissao+ "rwx";}
+        for (String position : chmod) {
+            if (position.equals("0")) {
+                permissao = permissao + "---";
+            }
+            if (position.equals("1")) {
+                permissao = permissao + "--x";
+            }
+            if (position.equals("2")) {
+                permissao = permissao + "-w-";
+            }
+            if (position.equals("3")) {
+                permissao = permissao + "-wx";
+            }
+            if (position.equals("4")) {
+                permissao = permissao + "r--";
+            }
+            if (position.equals("5")) {
+                permissao = permissao + "r-x";
+            }
+            if (position.equals("6")) {
+                permissao = permissao + "rw-";
+            }
+            if (position.equals("7")) {
+                permissao = permissao + "rwx";
+            }
         }
-        
+
         return permissao;
     }
 
@@ -601,7 +641,7 @@ public class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.19";
+        String version = "1.20";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;
