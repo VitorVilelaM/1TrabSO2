@@ -1,0 +1,34 @@
+mkdir a
+mkdir b
+mkdir c
+mkdir d
+mkdir e
+mkdir f
+mkdir g
+mkdir h
+createfile ./arquivo01.txt Conteudo do Arquivo 01
+createfile ./arquivo02.txt Conteudo do Arquivo 02
+createfile ./arquivo03.txt Conteudo do Arquivo 03
+createfile ./arquivo04.txt Conteudo do Arquivo 04
+createfile /a/arquivo_a_01.txt Conteudo do Arquivo A_01
+createfile /a/arquivo_a_02.txt Conteudo do Arquivo A_02
+createfile /a/arquivo_a_03.txt Conteudo do Arquivo A_03
+createfile /a/arquivo_a_04.txt Conteudo do Arquivo A_04
+rmdir ./h
+rm -r ./g
+rmdir ./a
+cd ./c
+chmod 700 ../a/arquivo01.txt
+chmod 711 ../a/arquivo02.txt
+chmod 744 ../a/arquivo03.txt
+chmod 755 ../a/arquivo04.txt
+createfile /b/arquivo_b_01.txt Conteudo do Arquivo B_01
+createfile /b/arquivo_b_02.txt Conteudo do Arquivo B_02
+cd ../b
+createfile ./erro/arquivo_erro.txt Nao pode criar este arquivo
+cd ../
+chmod -R 700 ./b
+rmdir ./c
+rmdir ./d
+rmdir ./e
+rmdir ./f

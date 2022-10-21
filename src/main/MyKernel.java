@@ -1,5 +1,6 @@
 package main;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.tools.jlink.plugin.Plugin;
@@ -434,7 +435,7 @@ public class MyKernel implements Kernel {
         Diretorio dirOrigem;
         int i, j;
         String newPermission;
-        
+
         if (comando.length == 3 && comando[0].contains("-R")) {
 
             newPermission = converteCHMOD(comando[1].split(""));
@@ -488,39 +489,34 @@ public class MyKernel implements Kernel {
                 }
             }
         }
-        
+
         dirOrigem.setPermissao(permissaoDir);
 
     }
 
     public String converteCHMOD(String[] chmod) {
         String permissao = "";
+        if (chmod.length == 3) {
+            for (String position : chmod) {
+                if (position.equals("0")) {
+                    permissao = permissao + "---";
+                } else if (position.equals("1")) {
+                    permissao = permissao + "--x";
+                } else if (position.equals("2")) {
+                    permissao = permissao + "-w-";
+                } else if (position.equals("3")) {
+                    permissao = permissao + "-wx";
+                } else if (position.equals("4")) {
+                    permissao = permissao + "r--";
+                } else if (position.equals("5")) {
+                    permissao = permissao + "r-x";
+                } else if (position.equals("6")) {
+                    permissao = permissao + "rw-";
+                } else if (position.equals("7")) {
+                    permissao = permissao + "rwx";
+                }
+            }
 
-        for (String position : chmod) {
-            if (position.equals("0")) {
-                permissao = permissao + "---";
-            }
-            if (position.equals("1")) {
-                permissao = permissao + "--x";
-            }
-            if (position.equals("2")) {
-                permissao = permissao + "-w-";
-            }
-            if (position.equals("3")) {
-                permissao = permissao + "-wx";
-            }
-            if (position.equals("4")) {
-                permissao = permissao + "r--";
-            }
-            if (position.equals("5")) {
-                permissao = permissao + "r-x";
-            }
-            if (position.equals("6")) {
-                permissao = permissao + "rw-";
-            }
-            if (position.equals("7")) {
-                permissao = permissao + "rwx";
-            }
         }
 
         return permissao;
@@ -615,6 +611,41 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        //./testes/emLote.txt
+        int i;
+        String comando, parametros;
+        List<String> config = FileManager.stringReader("./testes/emLote.txt");
+        for (i = 0; i < config.size(); i++) {
+            comando = config.get(i).substring(0, config.get(i).indexOf(" "));
+            parametros = config.get(i).substring(config.get(i).indexOf(" "));
+
+            if (comando.equals("ls")) {
+            } else if (comando.equals("mkdir")) {
+                mkdir(parametros);
+            } else if (comando.equals("cd")) {
+                cd(parametros);
+            } else if (comando.equals("rmdir")) {
+                rmdir(parametros);
+            } else if (comando.equals("cp")) {
+                cp(parametros);
+            } else if (comando.equals("mv")) {
+                mv(parametros);
+            } else if (comando.equals("rm")) {
+                rm(parametros);
+            } else if (comando.equals("chmod")) {
+                chmod(parametros);
+            } else if (comando.equals("createfile")) {
+                createfile(parametros);
+            } else if (comando.equals("cat")) {
+                cat(parametros);
+            } else if (comando.equals("batch")) {
+                batch(parametros);
+            } else if (comando.equals("dump")) {
+                dump(parametros);
+            } else {
+                result = "comando incorreto";
+            }
+        }
         //fim da implementacao do aluno
         return result;
     }
@@ -641,7 +672,7 @@ public class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.20";
+        String version = "1.21";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;
