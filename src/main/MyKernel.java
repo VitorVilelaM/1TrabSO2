@@ -20,6 +20,7 @@ public class MyKernel implements Kernel {
     public MyKernel() {
         raiz.setPai(raiz);
         dirAtual = raiz;
+
     }
 
     private Diretorio verificaCaminho(String Caminho[], boolean finalCaminho) {
@@ -30,6 +31,8 @@ public class MyKernel implements Kernel {
         } else {
             if (Caminho[0].equals("")) {
                 dirTemp = raiz;
+            } else if (Caminho[0].equals("..")) {
+                dirTemp = dirAtual.getPai();
             } else {
                 dirTemp = dirAtual;
             }
@@ -49,7 +52,6 @@ public class MyKernel implements Kernel {
         } else if ((Character) nome.charAt(0) == '-') {
             return false;
         }
-
         return true;
     }
 
@@ -82,21 +84,27 @@ public class MyKernel implements Kernel {
                 for (Arquivos arqTempo : dirTemp.getArquivos()) {
                     result += arqTempo.getNome() + " ";
                 }
-            } else {
-                String[] caminho = instrucao[0].split("/");
-                dirTemp = verificaCaminho(caminho, true);
-
-                for (Diretorio dirTempo : dirTemp.getFilhos()) {
-                    result += dirTempo.getNome() + " ";
-                }
             }
-
         } else {
             String[] caminho = instrucao[1].split("/");
             dirTemp = verificaCaminho(caminho, true);
 
-            for (Diretorio dirTempo : dirTemp.getFilhos()) {
-                result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
+            if (instrucao[0].equals("-l")) {
+                for (Diretorio dirTempo : dirTemp.getFilhos()) {
+                    result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
+                }
+
+                for (Arquivos arqAtual : dirTemp.getArquivos()) {
+                    result += arqAtual.getPermissao() + " " + arqAtual.getDataCriacao() + " " + arqAtual.getNome() + "\n";
+                }
+
+            } else if (instrucao[0].equals("")) {
+                for (Diretorio dirTempo : dirTemp.getFilhos()) {
+                    result += dirTempo.getNome() + " ";
+                }
+                for (Arquivos arqTempo : dirTemp.getArquivos()) {
+                    result += arqTempo.getNome() + " ";
+                }
             }
         }
         //fim da implementacao do aluno
@@ -154,7 +162,7 @@ public class MyKernel implements Kernel {
                 currentDir = dirAtual.getNome();
             }
         } else {
-            result = "Diretorio nao encontrado!";
+            result = "Diretório nao encontrado!";
         }
         //indique o diretório atual. Por exemplo... /
 
@@ -179,7 +187,7 @@ public class MyKernel implements Kernel {
 
         for (j = 0; j < dirTemp.getFilhos().size(); j++) {
             if (dirTemp.getFilhos().get(j).getNome().equals(nome)) {
-                if (dirTemp.getFilhos().get(i).getFilhos().size() == 0) {
+                if (dirTemp.getFilhos().get(i).getFilhos().size() == 0 && dirTemp.getFilhos().get(i).getArquivos().size() == 0) {
                     dirTemp.getFilhos().remove(i);
                     i = 0;
                     return result;
@@ -208,7 +216,7 @@ public class MyKernel implements Kernel {
         boolean mudarNome = false;
         String[] comando = parameters.split(" ");
 
-        if (comando.length == 2 && !comando[0].contains("R")) {
+        if (comando.length == 2 && !comando[0].contains("-R")) {
 
             String[] caminho1 = comando[0].split("/");
             String[] caminho2 = comando[1].split("/");
@@ -241,7 +249,7 @@ public class MyKernel implements Kernel {
 
                         return result;
                     } else {
-                        result = "diretorio destino ja possui esse arquivo";
+                        result = "Diretório destino já possui esse arquivo";
                     }
                 } else {
                     i++;
@@ -275,7 +283,7 @@ public class MyKernel implements Kernel {
                         i = 0;
                         return result;
                     } else {
-                        result = "diretorio destino ja possui esse diretorio";
+                        result = "Diretório destino ja possui esse diretório";
                     }
 
                 } else {
@@ -283,7 +291,7 @@ public class MyKernel implements Kernel {
                 }
             }
             if (j == dirOrigem.getFilhos().size()) {
-                result = "Diretorio nao encontrado";
+                result = "Diretório no encontrado";
             }
 
         } else {
@@ -395,7 +403,7 @@ public class MyKernel implements Kernel {
                 result = "Arquivo nao existente!";
             }
 
-        } else if (comando.length == 2 && comando[0].contains("R")) {
+        } else if (comando.length == 2 && comando[0].contains("-R")) {
 
             String[] caminho1 = comando[1].split("/");
             String nome = caminho1[caminho1.length - 1];
@@ -411,11 +419,11 @@ public class MyKernel implements Kernel {
                 }
             }
             if (j == dirOrigem.getFilhos().size()) {
-                result = "Arquivo nao existente!";
+                result = "Diretório nao existente!";
             }
 
         } else {
-            result = "comando incorreto";
+            result = "Comando incorreto";
         }
 
         //fim da implementacao do aluno
@@ -457,12 +465,14 @@ public class MyKernel implements Kernel {
             newPermission = converteCHMOD(comando[0].split(""));
 
             if (nome.contains(".txt")) {
-                newPermission = "-" + newPermission;
                 dirOrigem = verificaCaminho(caminho, false);
+                newPermission = "-" + newPermission;
 
+                String novoNome = dirOrigem.getNome();
                 Arquivos arqDestino = dirOrigem.buscaArquivoPorNome(dirOrigem, nome);
-                arqDestino.setPermissao(newPermission);
-
+                if (arqDestino != null) {
+                    arqDestino.setPermissao(newPermission);
+                }
             } else {
                 newPermission = "d" + newPermission;
                 dirOrigem = verificaCaminho(caminho, true);
@@ -488,6 +498,9 @@ public class MyKernel implements Kernel {
                     arqAtual.setPermissao(permissaoArq);
                 }
             }
+        }
+        for (Arquivos arqAtual : dirOrigem.getArquivos()) {
+            arqAtual.setPermissao(permissaoArq);
         }
 
         dirOrigem.setPermissao(permissaoDir);
@@ -591,14 +604,14 @@ public class MyKernel implements Kernel {
                     }
                 }
                 if (j == dirTemp.getArquivos().size()) {
-                    result = "arquivo não encontrado";
+                    result = "Arquivo não existe.";
                 }
 
             } else {
-                result = "nao foi possivel encontrar esse diretorio";
+                result = "Não foi possível encontrar esse diretório";
             }
         } else {
-            result = "comando incorreto";
+            result = "Comando incorreto";
         }
         //fim da implementacao do aluno
         return result;
@@ -611,43 +624,63 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        //./testes/emLote.txt
         int i;
         String comando, parametros;
         List<String> config = FileManager.stringReader("./testes/emLote.txt");
         for (i = 0; i < config.size(); i++) {
             comando = config.get(i).substring(0, config.get(i).indexOf(" "));
-            parametros = config.get(i).substring(config.get(i).indexOf(" "));
+            parametros = config.get(i).substring(config.get(i).indexOf(" ") + 1);
 
             if (comando.equals("ls")) {
+                ls(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("mkdir")) {
                 mkdir(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("cd")) {
                 cd(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("rmdir")) {
                 rmdir(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("cp")) {
                 cp(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("mv")) {
                 mv(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("rm")) {
                 rm(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("chmod")) {
                 chmod(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("createfile")) {
                 createfile(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("cat")) {
                 cat(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("batch")) {
                 batch(parametros);
+                result = "Comandos Executados.";
             } else if (comando.equals("dump")) {
                 dump(parametros);
+                result = "Comandos Executados.";
             } else {
-                result = "comando incorreto";
+                result = "Arquivo não existe.";
             }
         }
         //fim da implementacao do aluno
         return result;
+    }
+
+    public String retiraEspacoNoComeco(String nome) {
+        String novoNome = null;
+        novoNome = nome.replaceAll(" ", "");
+
+        System.out.println(" a");
+        return novoNome;
     }
 
     public String dump(String parameters) {
@@ -672,7 +705,7 @@ public class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.21";
+        String version = "1.23";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;

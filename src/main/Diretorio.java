@@ -124,7 +124,9 @@ public class Diretorio implements Cloneable {
 
     public Arquivos buscaArquivoPorNome(Diretorio dirTemp, String nome) {
         for (Arquivos atual : dirTemp.getArquivos()) {
-            if (atual.getNome().equals(nome)) {
+            String nomeAtual = atual.getNome();
+            
+            if (nomeAtual.equals(nome)) {
                 return atual;
             }
         }
