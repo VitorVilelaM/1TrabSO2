@@ -535,6 +535,34 @@ public class MyKernel implements Kernel {
         return permissao;
     }
 
+    public String desconverteCHMOD(String permissao) {
+        String CHMOD = "", aux;
+        int i = 1;
+        while (i < 9) {
+            aux = permissao.substring(i, i + 3);
+            if (aux.equals("rwx")) {
+                CHMOD += "7";
+            } else if (aux.equals("rw-")) {
+                CHMOD += "6";
+            } else if (aux.equals("r-x")) {
+                CHMOD += "5";
+            } else if (aux.equals("r--")) {
+                CHMOD += "4";
+            } else if (aux.equals("-wx")) {
+                CHMOD += "3";
+            } else if (aux.equals("-w-")) {
+                CHMOD += "2";
+            } else if (aux.equals("--x")) {
+                CHMOD += "1";
+            } else if (aux.equals("---")) {
+                CHMOD += "0";
+            }
+        }
+        //-d rwx rwx rwx
+
+        return CHMOD;
+    }
+
     public String createfile(String parameters) {
         //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
         String result = "";
@@ -675,14 +703,6 @@ public class MyKernel implements Kernel {
         return result;
     }
 
-    public String retiraEspacoNoComeco(String nome) {
-        String novoNome = null;
-        novoNome = nome.replaceAll(" ", "");
-
-        System.out.println(" a");
-        return novoNome;
-    }
-
     public String dump(String parameters) {
         //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
         String result = "";
@@ -690,8 +710,79 @@ public class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
+        Diretorio dirTemp = raiz;
+
+        FileManager.writer("./testes/emLote3.txt", "");
+        visitaTodosOsFilhos(dirTemp);
         //fim da implementacao do aluno
         return result;
+    }
+
+    public void visitaTodosOsFilhos(Diretorio dirOrigem) {
+        String comando;
+        String permissao;
+        String conteudo = "";
+
+        for (Diretorio atual : dirOrigem.getFilhos()) {
+            if (atual != null) {
+
+                comando = "mkdir " + atual.getNome();
+                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+
+                comando = "cd " + atual.getNome();
+                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+
+                visitaTodosOsFilhos(atual);
+
+                if (!atual.getPermissao().equals("drwxrwxrwx")) {
+                    permissao = desconverteCHMOD(atual.getPermissao());
+                    comando = "chmod " + permissao + " " + atual.getNome() + "\n";
+                    FileManager.writerAppend("./testes/emLote3.txt", comando);
+                }
+
+                for (Arquivos arqAtual : atual.getArquivos()) {
+                    for (String linha : arqAtual.getConteudo()) {
+                        conteudo = conteudo + linha + "\\n";
+                    }
+
+                    comando = "createfile " + arqAtual.getNome() + " " + conteudo + "\n";
+                    conteudo = "";
+
+                    FileManager.writerAppend("./testes/emLote3.txt", comando);
+
+                    if (!arqAtual.getPermissao().equals("-rwxrwxrwx") && !arqAtual.getPermissao().equals(atual.getPermissao())) {
+                        permissao = desconverteCHMOD(arqAtual.getPermissao());
+                        comando = "chmod " + permissao + " " + arqAtual.getNome();
+                        FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                    }
+                }
+
+                comando = "cd ..";
+                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+
+            }
+
+        }
+
+        if (dirOrigem == raiz) {
+
+            for (Arquivos arqAtual : dirOrigem.getArquivos()) {
+                for (String linha : arqAtual.getConteudo()) {
+                    conteudo = conteudo + linha + "\\n";
+                }
+
+                comando = "createfile " + arqAtual.getNome() + " " + conteudo;
+                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                conteudo = "";
+
+                if (!arqAtual.getPermissao().equals("-rwxrwxrwx")) {
+                    permissao = desconverteCHMOD(arqAtual.getPermissao());
+                    comando = "chmod " + permissao + " " + arqAtual.getNome();
+                    FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                }
+            }
+        }
+
     }
 
     public String info() {
@@ -705,7 +796,7 @@ public class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.23";
+        String version = "1.24";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;

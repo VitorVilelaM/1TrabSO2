@@ -217,7 +217,7 @@ public class FileSytemSimulator extends javax.swing.JFrame {
                 if( args.length != 1)
                     this.lastResult = this.myKernel.dump(comando.trim().substring(5, comando.trim().length()));
                 else
-                    this.lastResult = this.myKernel.batch("");
+                    this.lastResult = this.myKernel.dump("");
             }
             else if( args[0].equals("info") ){
                 this.lastResult = this.myKernel.info();
