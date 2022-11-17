@@ -1,5 +1,8 @@
 package main;
 
+import static binary.Binario.binaryStringToInt;
+import static binary.Binario.intToBinaryString;
+import hardware.HardDisk;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,17 +13,20 @@ import operatingSystem.Kernel;
  * Kernel desenvolvido pelo aluno. Outras classes criadas pelo aluno podem ser
  * utilizadas, como por exemplo: - Arvores; - Filas; - Pilhas; - etc...
  *
- * @author nome do aluno...
+ * @author Vitor Vilela Moraes
  */
 public class MyKernel implements Kernel {
 
     Diretorio raiz = new Diretorio(null);
     Diretorio dirAtual = new Diretorio(raiz);
+    HardDisk HD = new HardDisk(4);
+    int positionHD;
 
     public MyKernel() {
         raiz.setPai(raiz);
         dirAtual = raiz;
-
+        HD.inicializarMemoriaSecundaria();
+        positionHD = 0;
     }
 
     private Diretorio verificaCaminho(String Caminho[], boolean finalCaminho) {
@@ -70,11 +76,11 @@ public class MyKernel implements Kernel {
 
             if (instrucao[0].equals("-l")) {
                 for (Diretorio dirTempo : dirTemp.getFilhos()) {
-                    result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
+                    result += "d"+dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
                 }
 
                 for (Arquivos arqAtual : dirTemp.getArquivos()) {
-                    result += arqAtual.getPermissao() + " " + arqAtual.getDataCriacao() + " " + arqAtual.getNome() + "\n";
+                    result += "-"+arqAtual.getPermissao() + " " + arqAtual.getDataCriacao() + " " + arqAtual.getNome() + "\n";
                 }
 
             } else if (instrucao[0].equals("")) {
@@ -91,11 +97,11 @@ public class MyKernel implements Kernel {
 
             if (instrucao[0].equals("-l")) {
                 for (Diretorio dirTempo : dirTemp.getFilhos()) {
-                    result += dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
+                    result += "d"+dirTempo.getPermissao() + " " + dirTempo.getDataCriacao() + " " + dirTempo.getNome() + "\n";
                 }
 
                 for (Arquivos arqAtual : dirTemp.getArquivos()) {
-                    result += arqAtual.getPermissao() + " " + arqAtual.getDataCriacao() + " " + arqAtual.getNome() + "\n";
+                    result += "-"+arqAtual.getPermissao() + " " + arqAtual.getDataCriacao() + " " + arqAtual.getNome() + "\n";
                 }
 
             } else if (instrucao[0].equals("")) {
@@ -129,6 +135,7 @@ public class MyKernel implements Kernel {
                     Diretorio novo = new Diretorio(dirTemp);
                     novo.setNome(nome);
                     dirTemp.getFilhos().add(novo);
+                    salvaNoHD(novo);
                 } else {
                     result = "Ja existe uma pasta com esse nome!";
                 }
@@ -466,15 +473,12 @@ public class MyKernel implements Kernel {
 
             if (nome.contains(".txt")) {
                 dirOrigem = verificaCaminho(caminho, false);
-                newPermission = "-" + newPermission;
-
                 String novoNome = dirOrigem.getNome();
                 Arquivos arqDestino = dirOrigem.buscaArquivoPorNome(dirOrigem, nome);
                 if (arqDestino != null) {
                     arqDestino.setPermissao(newPermission);
                 }
             } else {
-                newPermission = "d" + newPermission;
                 dirOrigem = verificaCaminho(caminho, true);
                 dirOrigem.setPermissao(newPermission);
             }
@@ -557,6 +561,7 @@ public class MyKernel implements Kernel {
             } else if (aux.equals("---")) {
                 CHMOD += "0";
             }
+            i = i + 3;
         }
         //-d rwx rwx rwx
 
@@ -653,8 +658,10 @@ public class MyKernel implements Kernel {
 
         //inicio da implementacao do aluno
         int i;
-        String comando, parametros;
-        List<String> config = FileManager.stringReader("./testes/emLote.txt");
+        String comando, parametros, caminho;
+        caminho = parameters;
+
+        List<String> config = FileManager.stringReader(caminho);
         for (i = 0; i < config.size(); i++) {
             comando = config.get(i).substring(0, config.get(i).indexOf(" "));
             parametros = config.get(i).substring(config.get(i).indexOf(" ") + 1);
@@ -711,14 +718,21 @@ public class MyKernel implements Kernel {
 
         //inicio da implementacao do aluno
         Diretorio dirTemp = raiz;
+        String caminho = parameters;
+        // caminho esperado = caminho
+        caminho = "./testes/emLote3.txt";
 
-        FileManager.writer("./testes/emLote3.txt", "");
-        visitaTodosOsFilhos(dirTemp);
+        if (caminho != null) {
+            FileManager.writer(caminho, "");
+            visitaTodosOsFilhos(dirTemp, caminho);
+        } else {
+            result = "caminho inválido";
+        }
         //fim da implementacao do aluno
         return result;
     }
 
-    public void visitaTodosOsFilhos(Diretorio dirOrigem) {
+    public void visitaTodosOsFilhos(Diretorio dirOrigem, String caminho) {
         String comando;
         String permissao;
         String conteudo = "";
@@ -727,17 +741,17 @@ public class MyKernel implements Kernel {
             if (atual != null) {
 
                 comando = "mkdir " + atual.getNome();
-                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                FileManager.writerAppend(caminho, comando + "\n");
 
                 comando = "cd " + atual.getNome();
-                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                FileManager.writerAppend(caminho, comando + "\n");
 
-                visitaTodosOsFilhos(atual);
+                visitaTodosOsFilhos(atual, caminho);
 
                 if (!atual.getPermissao().equals("drwxrwxrwx")) {
                     permissao = desconverteCHMOD(atual.getPermissao());
                     comando = "chmod " + permissao + " " + atual.getNome() + "\n";
-                    FileManager.writerAppend("./testes/emLote3.txt", comando);
+                    FileManager.writerAppend(caminho, comando);
                 }
 
                 for (Arquivos arqAtual : atual.getArquivos()) {
@@ -748,17 +762,17 @@ public class MyKernel implements Kernel {
                     comando = "createfile " + arqAtual.getNome() + " " + conteudo + "\n";
                     conteudo = "";
 
-                    FileManager.writerAppend("./testes/emLote3.txt", comando);
+                    FileManager.writerAppend(caminho, comando);
 
                     if (!arqAtual.getPermissao().equals("-rwxrwxrwx") && !arqAtual.getPermissao().equals(atual.getPermissao())) {
                         permissao = desconverteCHMOD(arqAtual.getPermissao());
                         comando = "chmod " + permissao + " " + arqAtual.getNome();
-                        FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                        FileManager.writerAppend(caminho, comando + "\n");
                     }
                 }
 
                 comando = "cd ..";
-                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                FileManager.writerAppend(caminho, comando + "\n");
 
             }
 
@@ -772,13 +786,13 @@ public class MyKernel implements Kernel {
                 }
 
                 comando = "createfile " + arqAtual.getNome() + " " + conteudo;
-                FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                FileManager.writerAppend(caminho, comando + "\n");
                 conteudo = "";
 
                 if (!arqAtual.getPermissao().equals("-rwxrwxrwx")) {
                     permissao = desconverteCHMOD(arqAtual.getPermissao());
                     comando = "chmod " + permissao + " " + arqAtual.getNome();
-                    FileManager.writerAppend("./testes/emLote3.txt", comando + "\n");
+                    FileManager.writerAppend(caminho, comando + "\n");
                 }
             }
         }
@@ -805,4 +819,145 @@ public class MyKernel implements Kernel {
         return result;
     }
 
+    public void salvaNoHD(Diretorio atual) {
+
+        String binario = "";
+        Boolean[] bitsBinario;
+
+        binario = retornaBinario(atual.getNome());
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, positionHD);
+        positionHD = positionHD + (81 * 8);
+
+        binario = retornaBinario(atual.getPermissao());
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, positionHD);
+        positionHD = positionHD + (9 * 8);
+
+        binario = retornaBinario(atual.getDataCriacao());
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, positionHD);
+        positionHD = positionHD + (20 * 8);
+
+        /* /Olhar com o Douglas a Parte dos Endereços/
+        binario = retornaBinario(atual.getPai());
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, positionHD);
+         */
+        positionHD = positionHD + (2 * 8);
+
+        /* /Olhar com o Douglas a Parte dos Endereços/
+        binario = retornaBinario(atual.getFilhos());
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, positionHD);
+        */
+        positionHD = positionHD+(200 * 8);
+        
+        /* /Olhar com o Douglas a Parte dos Endereços/
+        binario = retornaBinario(atual.getArquivos());
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, positionHD);
+        */
+        positionHD = positionHD+(200 * 8);
+        
+        remontarDir();
+    }
+
+    public String retornaBinario(String parametro) {
+        char teste;
+        int j = 0, i;
+        String binario = "";
+
+        while (j < parametro.length()) {
+
+            teste = parametro.charAt(j);
+            i = teste;
+
+            binario += intToBinaryString(i, 8);
+            j++;
+        }
+
+        return binario;
+    }
+
+    public Boolean[] desconverteBinario(String Binario) {
+        Boolean[] binario = new Boolean[Binario.length()];
+        String[] aux = Binario.split("");
+        int j;
+        for (int i = 0; i < Binario.length(); i++) {
+            j = Integer.parseInt(aux[i]);
+            if (j > 0) {
+                binario[i] = true;
+            } else {
+                binario[i] = false;
+            }
+        }
+        return binario;
+    }
+
+    public void armazenaNoHD(Boolean[] bitsBinario, int inicio) {
+        int i = 0, j = inicio;
+
+        while (i < bitsBinario.length) {
+            HD.setBitDaPosicao(bitsBinario[i], j);
+            j++;
+            i++;
+        }
+    }
+    
+    public void remontarDir(){
+        String nome = "", permissao = "", data = "", binario = "";
+        int aux = 0, i = 0, posicaoHDMax;
+        char[] numeroASC = new char[200];
+        
+        posicaoHDMax = (81*8); 
+        for(; i < posicaoHDMax ; i++){
+            if(HD.getBitDaPosicao(i)){
+                binario += "1";
+            }else{
+                binario += "0";
+            }
+            
+            if(binario.length() == 8){
+                numeroASC[aux] = (char)binaryStringToInt(binario);
+                nome += numeroASC[aux];
+                aux++;
+                binario = "";
+            }
+        }    
+        posicaoHDMax += (9 * 8);
+        for(; i < posicaoHDMax ; i++){
+            if(HD.getBitDaPosicao(i)){
+                binario += "1";
+            }else{
+                binario += "0";
+            }
+            
+            if(binario.length() == 8){
+                numeroASC[aux] = (char)binaryStringToInt(binario);
+                permissao += numeroASC[aux];
+                aux++;
+                binario = "";
+            }
+        }   
+        posicaoHDMax += (20 * 8);
+        for(; i < posicaoHDMax ; i++){
+            if(HD.getBitDaPosicao(i)){
+                binario += "1";
+            }else{
+                binario += "0";
+            }
+            
+            if(binario.length() == 8){
+                numeroASC[aux] = (char)binaryStringToInt(binario);
+                data += numeroASC[aux];
+                aux++;
+                binario = "";
+            }
+        }   
+        
+        System.out.println(nome);
+        System.out.println(permissao);
+        System.out.println(data);
+    }
 }

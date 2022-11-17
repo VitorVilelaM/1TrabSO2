@@ -27,7 +27,7 @@ public class Diretorio implements Cloneable {
 
     public Diretorio(Diretorio dir) {
         this.pai = dir;
-        this.permissao = "drwxrwxrwx";
+        this.permissao = "rwxrwxrwx";
         SimpleDateFormat formato = new SimpleDateFormat("MMM dd yyyy HH:mm");
         this.dataCriacao = formato.format(new Date());
     }
