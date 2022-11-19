@@ -16,9 +16,11 @@ public class Diretorio implements Cloneable {
     private ArrayList<Arquivos> Arquivos = new ArrayList();
     private String permissao;
     private String dataCriacao;
-
+    private int positionHD;
+    
     public String getDataCriacao() {
         return dataCriacao;
+        
     }
 
     public void setDataCriacao(String dataCriacao) {
@@ -30,10 +32,19 @@ public class Diretorio implements Cloneable {
         this.permissao = "rwxrwxrwx";
         SimpleDateFormat formato = new SimpleDateFormat("MMM dd yyyy HH:mm");
         this.dataCriacao = formato.format(new Date());
+        this.positionHD = 0;
     }
 
     public String getNome() {
         return nome;
+    }
+
+    public int getPositionHD() {
+        return positionHD;
+    }
+
+    public void setPositionHD(int positionHD) {
+        this.positionHD = positionHD;
     }
 
     public void setNome(String nome) {
@@ -135,7 +146,6 @@ public class Diretorio implements Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-
         return super.clone();
     }
 }
