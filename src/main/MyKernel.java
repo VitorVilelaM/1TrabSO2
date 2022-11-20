@@ -147,7 +147,7 @@ public final class MyKernel implements Kernel {
     }
 
     public int retornaPosicaoPorNome(String nomeProcurado, int posicao) {
-        int diretorio = posicao, limiteDiretorio, position, posicaoEncontrada = -1;;
+        int diretorio = posicao, limiteDiretorio, position, posicaoEncontrada = -1;
         boolean encontrado = false;
         String nome;
 
@@ -171,6 +171,28 @@ public final class MyKernel implements Kernel {
                 } else {
                     diretorio += 16;
                 }
+            }
+        }
+
+        return posicaoEncontrada;
+    }
+
+    public int retornaPosicaoFilho(int filho, int pai) {
+        int diretorio = pai + 896, limiteDiretorio, position, posicaoEncontrada = -1;
+        boolean encontrado = false;
+        String nome;
+
+        limiteDiretorio = diretorio + 2496;
+
+        while (diretorio < (limiteDiretorio) && !encontrado) {
+
+            String binario = retornaBinario(diretorio, (diretorio + 16));
+            position = binaryStringToInt(binario);
+
+            if (position == filho) {
+                return diretorio;
+            } else {
+                diretorio += 16;
             }
         }
 
@@ -283,15 +305,20 @@ public final class MyKernel implements Kernel {
         int dirTemp = verificaOrigem(caminho, false);
         int posicaoPorNome = retornaPosicaoPorNome(caminho[caminho.length - 1], dirTemp + 896);
         if (dirTemp >= 0 && posicaoPorNome >= 0) {
-            positionDirAtual = posicaoPorNome;
-
-            if (positionDirAtual == 0) {
+            if (remontarDocs(false, posicaoPorNome).contains(".txt")) {
+                result = "voce nao pode entrar em um arquivo";
                 currentDir = "/";
             } else {
-                currentDir = remontarDocs(false, positionDirAtual);
+                positionDirAtual = posicaoPorNome;
+                if (positionDirAtual == 0) {
+                    currentDir = "/";
+                } else {
+                    currentDir = remontarDocs(false, positionDirAtual);
+                }
             }
         } else {
             result = "Diretório nao encontrado!";
+            currentDir = "/";
         }
         //indique o diretório atual. Por exemplo... /
 
@@ -311,24 +338,20 @@ public final class MyKernel implements Kernel {
         //inicio da implementacao do aluno
         String[] caminho = parameters.split("/");
         String nome = caminho[caminho.length - 1];
-        int j, i = 0;
-        Diretorio dirTemp = dirAtual;
 
-        for (j = 0; j < dirTemp.getFilhos().size(); j++) {
-            if (dirTemp.getFilhos().get(j).getNome().equals(nome)) {
-                if (verificaHDVazio(1)) {
-                    return result;
-                } else {
-                    result = "possui arquivos e/ou diretorios. (Nada foi removido)";
-                }
+        int dirTemp = verificaOrigem(caminho, false);
+        int posicaoPorNome = retornaPosicaoPorNome(caminho[caminho.length - 1], dirTemp + 896);
+        if (dirTemp >= 0 && posicaoPorNome >= 0) {
+            if (verificaHDVazio(posicaoPorNome + 896, posicaoPorNome + 3199)) {
+                limpaHD(posicaoPorNome, posicaoPorNome + 4095);
             } else {
-                i++;
+                result = "diretorio possui conteudo";
             }
-        }
-        if (j == dirTemp.getFilhos().size()) {
+        } else {
             result = "diretorio nao encontrado";
         }
-//fim da implementacao do aluno
+
+        //fim da implementacao do aluno
         return result;
     }
 
@@ -447,7 +470,56 @@ public final class MyKernel implements Kernel {
             String[] caminho2 = comando[1].split("/");
             String nome = caminho1[caminho1.length - 1];
             String novoNome = "";
+
+            int dirOrigem = verificaOrigem(caminho1, false);
+            int origemPorNome = retornaPosicaoPorNome(caminho1[caminho1.length - 1], dirOrigem + 896);
+
+            int dirDestino = verificaOrigem(caminho2, false);
+            int destinoPorNome = retornaPosicaoPorNome(caminho2[caminho2.length - 1], dirDestino + 896);
+
+            if (nome.contains(".txt")) {
+                /*  for (j = 0; j < dirOrigem.getArquivos().size(); j++) {
+                    if (dirOrigem.getArquivos().get(j).getNome().equals(nome)) {
+                        if (dirDestino.verificaNomeArquivos(dirDestino, nome)) {
+                            if (mudarNome) {
+                                Arquivos arqAux = dirOrigem.getArquivos().remove(i);
+                                arqAux.setNome(novoNome);
+                                dirDestino.getArquivos().add(arqAux);
+                                i = 0;
+
+                            } else {
+                                dirDestino.getArquivos().add(dirOrigem.getArquivos().remove(i));
+                                i = 0;
+                            }
+
+                            return result;
+                        } else {
+                            result = "diretorio destino ja possui esse arquivo";
+                        }
+                    } else {
+                        i++;
+                    }
+                    if (j == dirOrigem.getArquivos().size()) {
+                        result = "Arquivo nao encontrado";
+                    }
+                }*/
+            } else {
+                int positionInicio = destinoPorNome + 896, positionFinal = positionInicio + 1600;
+
+                if (seExisteNome(nome, destinoPorNome)) {
+                    if (verificaHDVazio(positionInicio, positionFinal)) {
+                        addFilho(origemPorNome, destinoPorNome);
+                        int posicaoLimpa = retornaPosicaoFilho(origemPorNome, dirOrigem);
+                        limpaHD(posicaoLimpa, posicaoLimpa + 16);
+                    } else {
+                        result = "impossivel criar pasta (Armazenamento Cheio)";
+                    }
+                }
+            }
+        } else {
+            result = "comando incorreto";
         }
+
         return result;
 
     }
@@ -461,10 +533,22 @@ public final class MyKernel implements Kernel {
         //inicio da implementacao do aluno
         int i = 0, j;
         String[] comando = parameters.split(" ");
-        if (comando.length == 1 && !comando[0].contains("-R")) {
+        if (comando.length == 1) {
 
             String[] caminho1 = comando[0].split("/");
             String nome = caminho1[caminho1.length - 1];
+        } else if (comando.length == 2 && comando[0].contains("-R")) {
+
+            String[] caminho = comando[1].split("/");
+            String nome = caminho[caminho.length - 1];
+
+            int dirTemp = verificaOrigem(caminho, false);
+            int posicaoPorNome = retornaPosicaoPorNome(caminho[caminho.length - 1], dirTemp + 896);
+            if (dirTemp >= 0 && posicaoPorNome >= 0) {
+                limpaHD(posicaoPorNome, posicaoPorNome + 4095);
+            } else {
+                result = "diretorio nao encontrado";
+            }
         }
         return result;
     }
@@ -596,33 +680,27 @@ public final class MyKernel implements Kernel {
         String[] caminho = comando[0].split("/");
 
         if (comando.length > 1) {
-            String ajuste = comando[1].replace("\\", "/");
-            String[] conteudo = ajuste.split("/n");
+            String conteudo = comando[1];
             //createfile ./disciplina.txt Sistemas Operacionais\nTrabalho Pratico 1
             String nome = caminho[caminho.length - 1];
 
-            Diretorio dirTemp = dirAtual;
-            if (dirTemp != null) {
-                if (verificaNome(nome)) {
-                    if (dirTemp.verificaNomeArquivos(dirTemp, nome)) {
-                        Arquivos novo = new Arquivos(dirTemp);
-                        nome = nome + ".txt";
-                        novo.setNome(nome);
-                        dirTemp.getArquivos().add(novo);
+            int dirTemporario = verificaOrigem(caminho, false);
 
-                        for (int i = 0; i < conteudo.length; i++) {
-                            novo.getConteudo().add(i, conteudo[i]);
-                        }
-                        salvaArquivoNoHD(novo);
+            if (verificaNome(nome)) {
+                nome = nome + ".txt";
+                if (dirTemporario >= 0) {
+                    if (seExisteNome(nome, dirTemporario)) {
+                        salvaArquivoNoHD(nome, dirTemporario, conteudo);
                     } else {
-                        result = "Ja existe um arquivo com esse nome!";
+                        result = "nome informado já existe";
                     }
                 } else {
-                    result = "Nome informado é invalido!";
+                    result = "Erro no caminho informado!";
                 }
             } else {
-                result = "Erro no caminho informado!";
+                result = "nome infomado invalido";
             }
+
         } else {
             result = "Erro no comando inserido";
         }
@@ -639,31 +717,24 @@ public final class MyKernel implements Kernel {
 
         //inicio da implementacao do aluno
         String[] caminho = parameters.split("/");
-        int i, j = 0;
-        if (caminho != null) {
-            Diretorio dirTemp = dirAtual;
-            String nome = caminho[caminho.length - 1];
+        String nome = caminho[caminho.length - 1];
 
-            if (dirTemp != null) {
-                for (Arquivos atual : dirTemp.getArquivos()) {
-                    if (atual.getNome().equals(nome)) {
-                        for (i = 0; i < atual.getConteudo().size(); i++) {
-                            result += atual.getConteudo().get(i) + "\n";
-                        }
-                    } else {
-                        j++;
-                    }
-                }
-                if (j == dirTemp.getArquivos().size()) {
-                    result = "Arquivo não existe.";
-                }
-
+        int dirOrigem = verificaOrigem(caminho, false);
+        int position, positionConteudo;
+        String conteudo;
+        if (dirOrigem >= 0) {
+            if (!seExisteNome(nome, dirOrigem)) {
+                position = retornaPosicaoPorNome(nome, dirOrigem);
+                positionConteudo = position + 880;
+                conteudo = retornaString(positionConteudo, positionConteudo + 3216);
+                result = conteudo;
             } else {
-                result = "Não foi possível encontrar esse diretório";
+                result = "arquivo nao encontrado";
             }
         } else {
-            result = "Comando incorreto";
+            result = "nome infomado invalido";
         }
+
         //fim da implementacao do aluno
         return result;
     }
@@ -828,7 +899,7 @@ public final class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.26";
+        String version = "1.27";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;
@@ -837,59 +908,50 @@ public final class MyKernel implements Kernel {
         return result;
     }
 
-    public void salvaArquivoNoHD(Arquivos atual) {
+    public void salvaArquivoNoHD(String nome, int pai, String conteudo) {
 
         String binario = "";
-        int positionAux, positionAuxMax;
+        int positionAux, positionAuxMax, position = positionHD;
         Boolean[] bitsBinario;
 
-        atual.setPositionHD(positionHD);
-
-        binario = retornaBinario(atual.getNome());
+        binario = retornaBinario(nome);
         bitsBinario = desconverteBinario(binario);
         armazenaNoHD(bitsBinario, positionHD);
         positionHD = positionHD + (80 * 8);
 
-        binario = retornaBinario(atual.getPermissao());
+        binario = retornaBinario("-rwxrwxrwx");
         bitsBinario = desconverteBinario(binario);
         armazenaNoHD(bitsBinario, positionHD);
         positionHD = positionHD + (10 * 8);
 
-        binario = retornaBinario(atual.getDataCriacao());
+        SimpleDateFormat formato = new SimpleDateFormat("MMM dd yyyy HH:mm");
+        String data = formato.format(new Date());
+        binario = retornaBinario(data);
         bitsBinario = desconverteBinario(binario);
         armazenaNoHD(bitsBinario, positionHD);
         positionHD = positionHD + (20 * 8);
 
-        binario = intToBinaryString(atual.getPai().getPositionHD(), 16);
+        binario = intToBinaryString(position, 16);
         bitsBinario = desconverteBinario(binario);
-        armazenaNoHD(bitsBinario, positionHD);
-        positionHD = positionHD + (2 * 8);
+        positionAux = pai + 896;
+        positionAuxMax = pai + 2496;
 
-        int j = 0;
-        positionAux = positionHD;
-        while (j < atual.getConteudo().size()) {
-            binario = retornaBinario(atual.getConteudo().get(j));
-
-            bitsBinario = desconverteBinario(binario);
-            armazenaNoHD(bitsBinario, positionAux);
-            positionAux += bitsBinario.length;
-            j++;
-        }
-
-        binario = intToBinaryString(atual.getPositionHD(), 16);
-        bitsBinario = desconverteBinario(binario);
-        positionAux = atual.getPai().getPositionHD() + 2496;
-        positionAuxMax = positionAux + 1600;
-        while (!verificaHDVazio(positionAux) && (positionAux < positionAuxMax)) {
+        while (!verificaHDVazio(positionAux, 16) && (positionAux < positionAuxMax)) {
             positionAux += 16;
         }
 
         if ((positionAux < positionAuxMax)) {
-
             armazenaNoHD(bitsBinario, positionAux);
         }
 
-        positionHD = positionHD + (400 * 8);
+        int posicaoAux2 = positionHD;
+
+        binario = retornaBinario(conteudo);
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, posicaoAux2);
+
+        positionHD = positionHD + (402 * 8);
+
     }
 
     public void salvaDiretorioNoHD(String nome, int pai) {
@@ -924,7 +986,7 @@ public final class MyKernel implements Kernel {
         positionAux = pai + 896;
         positionAuxMax = pai + 2496;
 
-        while (!verificaHDVazio(positionAux) && (positionAux < positionAuxMax)) {
+        while (!verificaHDVazio(positionAux, 16) && (positionAux < positionAuxMax)) {
             positionAux += 16;
         }
 
@@ -935,9 +997,9 @@ public final class MyKernel implements Kernel {
         positionHD = positionHD + (400 * 8);
     }
 
-    public Boolean verificaHDVazio(int caminho) {
+    public Boolean verificaHDVazio(int caminho, int posicaoMax) {
         String binario = "";
-        int posicaoHDInicio = caminho, posicaoHDMax = caminho + 16, posicao = 0;
+        int posicaoHDInicio = caminho, posicaoHDMax = caminho + posicaoMax, posicao = 0;
         for (int i = posicaoHDInicio; i < posicaoHDMax; i++) {
             if (HD.getBitDaPosicao(i)) {
                 binario += "1";
@@ -994,6 +1056,16 @@ public final class MyKernel implements Kernel {
 
         while (i < bitsBinario.length) {
             HD.setBitDaPosicao(bitsBinario[i], j);
+            j++;
+            i++;
+        }
+    }
+
+    public void limpaHD(int posicaoInicio, int posicaoFinal) {
+        int i = posicaoInicio, j = posicaoInicio;
+
+        while (i < posicaoFinal) {
+            HD.setBitDaPosicao(false, j);
             j++;
             i++;
         }
@@ -1066,4 +1138,26 @@ public final class MyKernel implements Kernel {
         return binario;
     }
 
+    public void addFilho(int filho, int pai) {
+        String binario;
+        Boolean bitsBinario[];
+        int positionAux, positionAuxMax;
+
+        binario = intToBinaryString(filho, 16);
+        bitsBinario = desconverteBinario(binario);
+        positionAux = pai + 896;
+        positionAuxMax = pai + 2496;
+
+        while (!verificaHDVazio(positionAux, 16) && (positionAux < positionAuxMax)) {
+            positionAux += 16;
+        }
+
+        if ((positionAux < positionAuxMax)) {
+            armazenaNoHD(bitsBinario, positionAux);
+        }
+
+        binario = intToBinaryString(pai, 16);
+        bitsBinario = desconverteBinario(binario);
+        armazenaNoHD(bitsBinario, filho + 880);
+    }
 }
