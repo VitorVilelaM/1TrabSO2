@@ -19,7 +19,16 @@ public class Arquivos {
     private ArrayList<String> Conteudo = new ArrayList();
     private String permissao;
     private String dataCriacao;
+    private int positionHD;
 
+    public int getPositionHD() {
+        return positionHD;
+    }
+
+    public void setPositionHD(int positionHD) {
+        this.positionHD = positionHD;
+    }
+            
     public ArrayList<String> getConteudo() {
         return Conteudo;
     }
@@ -30,7 +39,7 @@ public class Arquivos {
 
     public Arquivos(Diretorio dir) {
         this.pai = dir;
-        this.permissao = "rwxrwxrwx";
+        this.permissao = "-rwxrwxrwx";
         SimpleDateFormat formato = new SimpleDateFormat("MMM dd yyyy HH:mm");
         this.dataCriacao = formato.format(new Date());
     }

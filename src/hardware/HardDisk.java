@@ -32,5 +32,9 @@ public class HardDisk {
     public boolean getBitDaPosicao(int i) {
         return hardDisk[i];
     }
+    
+    public int getSizeHD(){
+        return hardDisk.length;
+    }
 
 }
