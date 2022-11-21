@@ -27,7 +27,6 @@ createfile /b/arquivo_b_02.txt Conteudo do Arquivo B_02
 cd ../b
 createfile ./erro/arquivo_erro.txt Nao pode criar este arquivo
 cd ../
-chmod -R 700 ./b
 rmdir ./c
 rmdir ./d
 rmdir ./e

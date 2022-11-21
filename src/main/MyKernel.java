@@ -32,7 +32,7 @@ public final class MyKernel implements Kernel {
         positionHD = 0;
         positionDirAtual = 0;
         HD.inicializarMemoriaSecundaria();
-        salvaDiretorioNoHD("Vitor", 0);
+        salvaDiretorioNoHD("Vitor", "drwxrwxrwx", 0);
     }
 
     public int verificaOrigem(String Caminho[], boolean finalCaminho) {
@@ -210,28 +210,27 @@ public final class MyKernel implements Kernel {
         String binario = "";
         int posicaoHDInicio = positionDirAtual + 896, posicao;
         boolean description;
+        description = false;
 
-        if (instrucao[0].equals("-l")) {
-            description = true;
-        } else {
-            description = false;
-        }
+        description = instrucao[0].equals("-l");
+
         if (instrucao.length == 1) {
             binario = retornaBinario(posicaoHDInicio, (posicaoHDInicio + 16));
             posicao = binaryStringToInt(binario);
 
-            while (posicao > 0) {
-
-                if (description) {
-                    result += remontarDocs(description, posicao) + "\n";
-                } else {
-                    result += remontarDocs(description, posicao) + " ";
+            do {
+                if (posicao > 0) {
+                    if (description) {
+                        result += remontarDocs(description, posicao) + "\n";
+                    } else {
+                        result += remontarDocs(description, posicao) + " ";
+                    }
                 }
 
                 posicaoHDInicio += 16;
                 binario = retornaBinario(posicaoHDInicio, (posicaoHDInicio + 16));
                 posicao = binaryStringToInt(binario);
-            }
+            } while (posicao > 0);
 
         } else {
             String[] caminho = instrucao[1].split("/");
@@ -244,7 +243,7 @@ public final class MyKernel implements Kernel {
                 binario = retornaBinario(posicaoPorNome, (posicaoPorNome + 16));
                 posicao = binaryStringToInt(binario);
 
-                while (posicao > 0) {
+                do {
                     if (description) {
                         result += remontarDocs(description, posicao) + "\n";
                     } else {
@@ -254,7 +253,7 @@ public final class MyKernel implements Kernel {
                     posicaoPorNome += 16;
                     binario = retornaBinario(posicaoPorNome, (posicaoPorNome + 16));
                     posicao = binaryStringToInt(binario);
-                }
+                } while (posicao > 0);
             } else {
                 result = "nao foi possivel encontrar o diretorio";
             }
@@ -275,10 +274,11 @@ public final class MyKernel implements Kernel {
         String nome = caminho[caminho.length - 1];
 
         int dirTemporario = verificaOrigem(caminho, false);
+        
         if (verificaNome(nome)) {
             if (dirTemporario >= 0) {
                 if (seExisteNome(nome, dirTemporario)) {
-                    salvaDiretorioNoHD(nome, dirTemporario);
+                    salvaDiretorioNoHD(nome, "drwxrwxrwx", dirTemporario);
                 } else {
                     result = "nome informado já existe";
                 }
@@ -318,7 +318,6 @@ public final class MyKernel implements Kernel {
             }
         } else {
             result = "Diretório nao encontrado!";
-            currentDir = "/";
         }
         //indique o diretório atual. Por exemplo... /
 
@@ -362,106 +361,7 @@ public final class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        int i = 0, j;
-        boolean mudarNome = false;
-        String[] comando = parameters.split(" ");
-
-        if (comando.length == 2 && !comando[0].contains("-R")) {
-
-            String[] caminho1 = comando[0].split("/");
-            String[] caminho2 = comando[1].split("/");
-            String nome = caminho1[caminho1.length - 1];
-            String novoNome = "";
-            Diretorio dirOrigem = dirAtual;
-            Diretorio dirDestino;
-
-            if (caminho2[caminho2.length - 1].contains(".txt")) {
-                dirDestino = dirAtual;;
-                mudarNome = true;
-                novoNome = caminho2[caminho2.length - 1];
-            } else {
-                dirDestino = dirAtual;
-            }
-
-            for (j = 0; j < dirOrigem.getArquivos().size(); j++) {
-                if (dirOrigem.getArquivos().get(j).getNome().equals(nome)) {
-                    if (dirDestino.verificaNomeArquivos(dirDestino, nome)) {
-                        if (mudarNome) {
-                            Arquivos arqAux = dirOrigem.getArquivos().get(i);
-                            arqAux.setNome(novoNome);
-                            dirDestino.getArquivos().add(arqAux);
-                            i = 0;
-
-                        } else {
-                            dirDestino.getArquivos().add(dirOrigem.getArquivos().get(i));
-                            i = 0;
-                        }
-
-                        return result;
-                    } else {
-                        result = "Diretório destino já possui esse arquivo";
-                    }
-                } else {
-                    i++;
-                }
-            }
-            if (j == dirOrigem.getArquivos().size()) {
-                result = "Arquivo nao encontrado";
-            }
-
-        } else if (comando.length == 3 && comando[0].contains("R")) {
-
-            String[] caminho1 = comando[1].split("/");
-            String[] caminho2 = comando[2].split("/");
-            String nome = caminho1[caminho1.length - 1];
-
-            Diretorio dirOrigem = dirAtual;;
-            Diretorio dirDestino = dirAtual;
-
-            for (j = 0; j < dirOrigem.getFilhos().size(); j++) {
-
-                if (dirOrigem.getFilhos().get(j).getNome().equals(nome)) {
-                    if (dirDestino.verificaNomeFilhos(dirDestino, nome)) {
-                        Diretorio novo = null;
-                        try {
-                            novo = (Diretorio) dirOrigem.getFilhos().get(i).clone();
-
-                        } catch (CloneNotSupportedException ex) {
-                            Logger.getLogger(MyKernel.class
-                                    .getName()).log(Level.SEVERE, null, ex);
-                        }
-                        novo.setPai(dirDestino);
-                        dirDestino.getFilhos().add(novo);
-                        i = 0;
-                        return result;
-                    } else {
-                        result = "Diretório destino ja possui esse diretório";
-                    }
-
-                } else {
-                    i++;
-                }
-            }
-            if (j == dirOrigem.getFilhos().size()) {
-                result = "Diretório no encontrado";
-            }
-
-        } else {
-            result = "comando incorreto";
-        }
-
-        //fim da implementacao do aluno
-        return result;
-    }
-
-    public String mv(String parameters) {
-        //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
-        String result = "";
-        System.out.println("Chamada de Sistema: mv");
-        System.out.println("\tParametros: " + parameters);
-
-        //inicio da implementacao do aluno
-        int i = 0, j;
+        int copia;
         boolean mudarNome = false;
         String[] comando = parameters.split(" ");
 
@@ -477,51 +377,89 @@ public final class MyKernel implements Kernel {
             int dirDestino = verificaOrigem(caminho2, false);
             int destinoPorNome = retornaPosicaoPorNome(caminho2[caminho2.length - 1], dirDestino + 896);
 
-            if (nome.contains(".txt")) {
-                /*  for (j = 0; j < dirOrigem.getArquivos().size(); j++) {
-                    if (dirOrigem.getArquivos().get(j).getNome().equals(nome)) {
-                        if (dirDestino.verificaNomeArquivos(dirDestino, nome)) {
-                            if (mudarNome) {
-                                Arquivos arqAux = dirOrigem.getArquivos().remove(i);
-                                arqAux.setNome(novoNome);
-                                dirDestino.getArquivos().add(arqAux);
-                                i = 0;
+            int positionInicio = destinoPorNome + 896, positionFinal = positionInicio + 1600;
 
-                            } else {
-                                dirDestino.getArquivos().add(dirOrigem.getArquivos().remove(i));
-                                i = 0;
-                            }
-
-                            return result;
-                        } else {
-                            result = "diretorio destino ja possui esse arquivo";
-                        }
-                    } else {
-                        i++;
-                    }
-                    if (j == dirOrigem.getArquivos().size()) {
-                        result = "Arquivo nao encontrado";
-                    }
-                }*/
-            } else {
-                int positionInicio = destinoPorNome + 896, positionFinal = positionInicio + 1600;
-
-                if (seExisteNome(nome, destinoPorNome)) {
-                    if (verificaHDVazio(positionInicio, positionFinal)) {
-                        addFilho(origemPorNome, destinoPorNome);
-                        int posicaoLimpa = retornaPosicaoFilho(origemPorNome, dirOrigem);
-                        limpaHD(posicaoLimpa, posicaoLimpa + 16);
-                    } else {
-                        result = "impossivel criar pasta (Armazenamento Cheio)";
-                    }
+            if (seExisteNome(nome, destinoPorNome)) {
+                if (verificaHDVazio(positionInicio, positionFinal)) {
+                    copia = copiaBloco(origemPorNome);
+                    addFilho(copia, destinoPorNome, true);
+                } else {
+                    result = "impossivel copiar pasta (Armazenamento Cheio)";
                 }
+            } else {
+                result = "nao foi possivel encontrar o objeto";
             }
+        } else if (comando.length == 3 && comando[0].contains("-R")) {
         } else {
             result = "comando incorreto";
         }
 
+        //fim da implementacao do aluno
         return result;
+    }
 
+    public String mv(String parameters) {
+        //variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+        String result = "";
+        System.out.println("Chamada de Sistema: mv");
+        System.out.println("\tParametros: " + parameters);
+
+        //inicio da implementacao do aluno
+        String[] comando = parameters.split(" ");
+        String binario;
+        Boolean[] bitsBinario;
+
+        if (comando.length == 2) {
+            String[] caminho1 = comando[0].split("/");
+            String[] caminho2 = comando[1].split("/");
+            String nome = caminho1[caminho1.length - 1];
+            String novoNome = caminho2[caminho2.length - 1];
+
+            int dirOrigem = verificaOrigem(caminho1, false);
+            int origemPorNome = retornaPosicaoPorNome(caminho1[caminho1.length - 1], dirOrigem + 896);
+
+            int dirDestino = verificaOrigem(caminho2, false);
+            int destinoPorNome = retornaPosicaoPorNome(caminho2[caminho2.length - 1], dirDestino + 896);
+            int positionInicio = destinoPorNome + 896, positionFinal = positionInicio + 1600;
+
+            if (nome.contains(".txt")) {
+
+                if (seExisteNome(nome, destinoPorNome)) {
+                    if (verificaHDVazio(positionInicio, positionFinal)) {
+                        if (novoNome.contains(".txt") && nome.contains(".txt")) {
+                            if (!novoNome.equals(nome)) {
+                                binario = retornaBinario(novoNome);
+                                bitsBinario = desconverteBinario(binario);
+                                armazenaNoHD(bitsBinario, origemPorNome);
+                            }
+                        } else {
+                            addFilho(origemPorNome, destinoPorNome, true);
+                            int posicaoLimpa = retornaPosicaoFilho(origemPorNome, dirOrigem);
+                            int max = posicaoLimpa + 16;
+                            limpaHD(posicaoLimpa, max);
+                        }
+
+                    } else {
+                        result = "impossivel criar pasta (Armazenamento Cheio)";
+                    }
+
+                } else {
+                    if (seExisteNome(nome, destinoPorNome)) {
+                        if (verificaHDVazio(positionInicio, positionFinal)) {
+                            addFilho(origemPorNome, destinoPorNome, true);
+                            int posicaoLimpa = retornaPosicaoFilho(origemPorNome, dirOrigem);
+                            int max = posicaoLimpa + 16;
+                            limpaHD(posicaoLimpa, max);
+                        } else {
+                            result = "impossivel criar pasta (Armazenamento Cheio)";
+                        }
+                    }
+                }
+            } else {
+                result = "comando incorreto";
+            }
+        }
+        return result;
     }
 
     public String rm(String parameters) {
@@ -531,23 +469,34 @@ public final class MyKernel implements Kernel {
         System.out.println("\tParametros: " + parameters);
 
         //inicio da implementacao do aluno
-        int i = 0, j;
         String[] comando = parameters.split(" ");
         if (comando.length == 1) {
 
             String[] caminho1 = comando[0].split("/");
             String nome = caminho1[caminho1.length - 1];
-        } else if (comando.length == 2 && comando[0].contains("-R")) {
 
-            String[] caminho = comando[1].split("/");
-            String nome = caminho[caminho.length - 1];
-
-            int dirTemp = verificaOrigem(caminho, false);
-            int posicaoPorNome = retornaPosicaoPorNome(caminho[caminho.length - 1], dirTemp + 896);
+            int dirTemp = verificaOrigem(caminho1, false);
+            int posicaoPorNome = retornaPosicaoPorNome(caminho1[caminho1.length - 1], dirTemp + 896);
             if (dirTemp >= 0 && posicaoPorNome >= 0) {
                 limpaHD(posicaoPorNome, posicaoPorNome + 4095);
             } else {
-                result = "diretorio nao encontrado";
+                result = "objeto para exclusao nao encontrado";
+            }
+        } else if (comando.length == 2 && comando[0].contains("-R")) {
+
+            String[] caminho2 = comando[1].split("/");
+            String nome = caminho2[caminho2.length - 1];
+
+            int dirTemp = verificaOrigem(caminho2, false);
+            int posicaoPorNome = retornaPosicaoPorNome(caminho2[caminho2.length - 1], dirTemp + 896);
+            if (!nome.contains(".txt")) {
+                if (dirTemp >= 0 && posicaoPorNome >= 0) {
+                    limpaHD(posicaoPorNome, posicaoPorNome + 4095);
+                } else {
+                    result = "diretorio nao encontrado";
+                }
+            } else {
+                result = "impossivel excluir arquivo com esse comando";
             }
         }
         return result;
@@ -561,55 +510,71 @@ public final class MyKernel implements Kernel {
 
         //inicio da implementacao do aluno
         String[] comando = parameters.split(" "), caminho;
-        String nome;
-        Arquivos arqModificado;
-        Diretorio dirOrigem;
-        int i, j;
-        String newPermission;
+        String newPermission, nome, binario;
+        Boolean[] bitsBinario;
+        int posicaoPermissao;
 
         if (comando.length == 3 && comando[0].contains("-R")) {
 
             newPermission = converteCHMOD(comando[1].split(""));
             caminho = comando[2].split("/");
-            dirOrigem = dirAtual;
 
-            if (dirOrigem != null) {
-                newPermission = newPermission;
-                alteraPermissaoFilhos(dirOrigem, newPermission);
+            int dirTemp = verificaOrigem(caminho, false);
+            int posicaoPorNome = retornaPosicaoPorNome(caminho[caminho.length - 1], dirTemp + 896);
+            if (posicaoPorNome >= 0) {
 
-            } else {
-                result = "diretorio nao encontrado";
+                binario = retornaBinario(newPermission);
+                bitsBinario = desconverteBinario(binario);
+                alteraPermissaoFilhos(posicaoPorNome, bitsBinario);
             }
 
         } else if (comando.length == 2) {
-
             caminho = comando[1].split("/");
-            nome = caminho[caminho.length - 1];
-            newPermission = converteCHMOD(comando[0].split(""));
+            int dirTemp = verificaOrigem(caminho, false);
+            int posicaoPorNome = retornaPosicaoPorNome(caminho[caminho.length - 1], dirTemp + 896);
+            if (posicaoPorNome >= 0) {
+                newPermission = converteCHMOD(comando[0].split(""));
+                posicaoPermissao = posicaoPorNome + (81 * 8);
+
+                binario = retornaBinario(newPermission);
+                bitsBinario = desconverteBinario(binario);
+                armazenaNoHD(bitsBinario, posicaoPermissao);
+            } else {
+                result = "objeto nao encontrado";
+            }
+
+        } else {
+            result = "comando incorreto";
         }
         return result;
     }
 
-    public void alteraPermissaoFilhos(Diretorio dirOrigem, String permissao) {
-        String permissaoDir = "d" + permissao;
-        String permissaoArq = "-" + permissao;
+    public void alteraPermissaoFilhos(int origem, Boolean[] bitsBinario) {
+        int posicaoFilho, posicaoPermissao, i = 1;
+        String nome, binario;
+        armazenaNoHD(bitsBinario, origem + 81 * 8);
 
-        for (Diretorio atual : dirOrigem.getFilhos()) {
-            if (atual != null) {
-                alteraPermissaoFilhos(atual, permissao);
-                atual.setPermissao(permissaoDir);
+        int posicaoInicio = origem + 896, posicaoMax = origem + 896 + 16;
 
-                for (Arquivos arqAtual : atual.getArquivos()) {
-                    arqAtual.setPermissao(permissaoArq);
-                }
+        String posicao = retornaBinario(posicaoInicio, posicaoMax);
+        posicaoFilho = binaryStringToInt(posicao);
+
+        while (posicaoFilho != 0) {
+            posicaoPermissao = posicaoFilho + 81 * 8;
+            nome = retornaString(posicaoFilho, posicaoFilho + 81 * 8);
+
+            if (nome.contains(".txt")) {
+                armazenaNoHD(bitsBinario, posicaoPermissao);
+            } else {
+                alteraPermissaoFilhos(posicaoFilho, bitsBinario);
             }
-        }
-        for (Arquivos arqAtual : dirOrigem.getArquivos()) {
-            arqAtual.setPermissao(permissaoArq);
-        }
 
-        dirOrigem.setPermissao(permissaoDir);
+            armazenaNoHD(bitsBinario, posicaoPermissao);
 
+            posicaoInicio += 16;
+            posicaoMax += 16;
+            posicaoFilho = binaryStringToInt(retornaBinario(posicaoInicio, posicaoMax));
+        }
     }
 
     public String converteCHMOD(String[] chmod) {
@@ -899,7 +864,7 @@ public final class MyKernel implements Kernel {
         //numero de matricula
         String registration = "2020.110.200.22";
         //versao do sistema de arquivos
-        String version = "1.27";
+        String version = "1.28";
 
         result += "Nome do Aluno:        " + name;
         result += "\nMatricula do Aluno:   " + registration;
@@ -933,8 +898,8 @@ public final class MyKernel implements Kernel {
 
         binario = intToBinaryString(position, 16);
         bitsBinario = desconverteBinario(binario);
-        positionAux = pai + 896;
-        positionAuxMax = pai + 2496;
+        positionAux = pai + 2496;
+        positionAuxMax = positionAux + 1600;
 
         while (!verificaHDVazio(positionAux, 16) && (positionAux < positionAuxMax)) {
             positionAux += 16;
@@ -954,7 +919,7 @@ public final class MyKernel implements Kernel {
 
     }
 
-    public void salvaDiretorioNoHD(String nome, int pai) {
+    public void salvaDiretorioNoHD(String nome, String permisao, int pai) {
         String binario = "";
         int positionAux, positionAuxMax, position = positionHD;
         Boolean[] bitsBinario;
@@ -1063,6 +1028,7 @@ public final class MyKernel implements Kernel {
 
     public void limpaHD(int posicaoInicio, int posicaoFinal) {
         int i = posicaoInicio, j = posicaoInicio;
+        String bin = "";
 
         while (i < posicaoFinal) {
             HD.setBitDaPosicao(false, j);
@@ -1138,7 +1104,7 @@ public final class MyKernel implements Kernel {
         return binario;
     }
 
-    public void addFilho(int filho, int pai) {
+    public void addFilho(int filho, int pai, boolean mudaPai) {
         String binario;
         Boolean bitsBinario[];
         int positionAux, positionAuxMax;
@@ -1155,9 +1121,28 @@ public final class MyKernel implements Kernel {
         if ((positionAux < positionAuxMax)) {
             armazenaNoHD(bitsBinario, positionAux);
         }
+        if (mudaPai) {
+            binario = intToBinaryString(pai, 16);
+            bitsBinario = desconverteBinario(binario);
+            armazenaNoHD(bitsBinario, filho + 880);
+        }
+    }
 
-        binario = intToBinaryString(pai, 16);
-        bitsBinario = desconverteBinario(binario);
-        armazenaNoHD(bitsBinario, filho + 880);
+    public int copiaBloco(int origem) {
+        int j = origem, i, count = 0;
+        int pos = positionHD;
+        int posMax = positionHD + 4096;
+        for (i = positionHD; i < posMax; i++) {
+            count++;
+            HD.setBitDaPosicao(HD.getBitDaPosicao(j), i);
+            i++;
+            if (count == 1000) {
+                count = 0;
+            }
+
+            j++;
+        }
+        System.out.println(j + " " + i);
+        return positionHD += 4096;
     }
 }
