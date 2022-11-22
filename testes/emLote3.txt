@@ -1,22 +1,10 @@
 mkdir a
 cd a
-createfile arquivo_a_01.txt Conteudo do Arquivo A_01\n
-createfile arquivo_a_02.txt Conteudo do Arquivo A_02\n
-createfile arquivo_a_03.txt Conteudo do Arquivo A_03\n
-createfile arquivo_a_04.txt Conteudo do Arquivo A_04\n
-cd ..
 mkdir b
 cd b
+cd ..
 chmod 700 b
-createfile arquivo_b_01.txt Conteudo do Arquivo B_01\n
-chmod 700 arquivo_b_01.txt
-createfile arquivo_b_02.txt Conteudo do Arquivo B_02\n
-chmod 700 arquivo_b_02.txt
+createfile a.txt a
+chmod 700 a.txt
+chmod 700 a
 cd ..
-mkdir g
-cd g
-cd ..
-createfile arquivo01.txt Conteudo do Arquivo 01\n
-createfile arquivo02.txt Conteudo do Arquivo 02\n
-createfile arquivo03.txt Conteudo do Arquivo 03\n
-createfile arquivo04.txt Conteudo do Arquivo 04\n
